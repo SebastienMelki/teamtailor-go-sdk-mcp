@@ -1,0 +1,411 @@
+openapi: 3.1.0
+info:
+    title: TeamtailorService API
+    version: 1.0.0
+paths:
+    /v1/candidates:
+        get:
+            tags:
+                - TeamtailorService
+            summary: ListCandidates
+            description: |-
+                ListCandidates returns a paginated list of candidates.
+                 GET /v1/candidates
+            operationId: ListCandidates
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: page[size]
+                  in: query
+                  description: Number of records per page (Teamtailor caps at 30).
+                  required: false
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page[after]
+                  in: query
+                  description: Cursor for the next page (opaque token returned in `links.next`).
+                  required: false
+                  schema:
+                    type: string
+                - name: page[before]
+                  in: query
+                  description: Cursor for the previous page (opaque token returned in `links.prev`).
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[email]
+                  in: query
+                  description: Filter candidates by exact email match.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[updated-at][from]
+                  in: query
+                  description: Filter candidates updated after this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[updated-at][to]
+                  in: query
+                  description: Filter candidates updated before this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: Comma-separated relationships to sideload, e.g. "department,locations".
+                  required: false
+                  schema:
+                    type: string
+                - name: sort
+                  in: query
+                  description: Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[candidates]
+                  in: query
+                  description: 'Sparse fieldset: comma-separated attribute names to return on candidates.'
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCandidatesResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    schemas:
+        Error:
+            type: object
+            properties:
+                message:
+                    type: string
+                    description: Error message (e.g., 'user not found', 'database connection failed')
+            description: Error is returned when a handler encounters an error. It contains a simple error message that the developer can customize.
+        FieldViolation:
+            type: object
+            properties:
+                field:
+                    type: string
+                    description: The field path that failed validation (e.g., 'user.email' for nested fields). For header validation, this will be the header name (e.g., 'X-API-Key')
+                description:
+                    type: string
+                    description: Human-readable description of the validation violation (e.g., 'must be a valid email address', 'required field missing')
+            required:
+                - field
+                - description
+            description: FieldViolation describes a single validation error for a specific field.
+        ValidationError:
+            type: object
+            properties:
+                violations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/FieldViolation'
+                    description: List of validation violations
+            required:
+                - violations
+            description: ValidationError is returned when request validation fails. It contains a list of field violations describing what went wrong.
+        ListCandidatesRequest:
+            type: object
+            properties:
+                pageSize:
+                    type: integer
+                    examples:
+                        - 10
+                    format: int32
+                    description: Number of records per page (Teamtailor caps at 30).
+                    example: 10
+                pageAfter:
+                    type: string
+                    description: Cursor for the next page (opaque token returned in `links.next`).
+                pageBefore:
+                    type: string
+                    description: Cursor for the previous page (opaque token returned in `links.prev`).
+                filterEmail:
+                    type: string
+                    examples:
+                        - jane.doe@example.com
+                    description: Filter candidates by exact email match.
+                    example: jane.doe@example.com
+                filterUpdatedAtFrom:
+                    type: string
+                    description: Filter candidates updated after this RFC 3339 timestamp.
+                filterUpdatedAtTo:
+                    type: string
+                    description: Filter candidates updated before this RFC 3339 timestamp.
+                include:
+                    type: string
+                    examples:
+                        - department,locations
+                    description: Comma-separated relationships to sideload, e.g. "department,locations".
+                    example: department,locations
+                sort:
+                    type: string
+                    examples:
+                        - -created-at
+                    description: Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
+                    example: -created-at
+                fieldsCandidates:
+                    type: string
+                    description: 'Sparse fieldset: comma-separated attribute names to return on candidates.'
+            description: |-
+                ListCandidatesRequest is the request shape for GET /v1/candidates.
+                 All fields map to JSON:API query parameters. Bracketed names like `page[size]`
+                 and `filter[email]` are preserved verbatim via `sebuf.http.query.name`.
+        ListCandidatesResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Candidate'
+                links:
+                    $ref: '#/components/schemas/Links'
+                meta:
+                    $ref: '#/components/schemas/Meta'
+            description: ListCandidatesResponse is the JSON:API document returned by GET /v1/candidates.
+        Candidate:
+            type: object
+            properties:
+                type:
+                    type: string
+                    examples:
+                        - candidates
+                    description: JSON:API resource type, always "candidates" for this message.
+                    example: candidates
+                id:
+                    type: string
+                    examples:
+                        - 12345
+                    description: Teamtailor candidate ID.
+                    example: 12345
+                attributes:
+                    $ref: '#/components/schemas/CandidateAttributes'
+                relationships:
+                    $ref: '#/components/schemas/CandidateRelationships'
+                links:
+                    $ref: '#/components/schemas/Links'
+            description: |-
+                Candidate is a JSON:API resource of type `candidates`.
+
+                 Shape on the wire:
+                 {
+                   "type": "candidates",
+                   "id": "123",
+                   "attributes": { "first-name": "...", ... },
+                   "relationships": { ... },
+                   "links": { "self": "..." }
+                 }
+        CandidateAttributes:
+            type: object
+            properties:
+                first-name:
+                    type: string
+                    examples:
+                        - Jane
+                    description: Candidate's first/given name.
+                    example: Jane
+                last-name:
+                    type: string
+                    examples:
+                        - Doe
+                    description: Candidate's last/family name.
+                    example: Doe
+                email:
+                    type: string
+                    examples:
+                        - jane.doe@example.com
+                    description: Email address.
+                    example: jane.doe@example.com
+                phone:
+                    type: string
+                    examples:
+                        - +1-555-123-4567
+                    description: Phone number.
+                    example: +1-555-123-4567
+                pitch:
+                    type: string
+                    description: Short pitch / candidate summary.
+                sourced:
+                    type: boolean
+                    description: Whether the candidate was sourced (proactively added) rather than self-applied.
+                tags:
+                    type: array
+                    items:
+                        type: string
+                        description: Free-form tags applied to the candidate.
+                linkedin-url:
+                    type: string
+                    description: LinkedIn profile URL.
+                facebook-id:
+                    type: string
+                    description: Facebook profile ID.
+                twitter-name:
+                    type: string
+                    description: Twitter handle (without leading @).
+                resume:
+                    type: string
+                    description: URL of the most recently uploaded resume (transformed by Teamtailor).
+                original-resume:
+                    type: string
+                    description: URL of the original uploaded resume file.
+                picture:
+                    type: string
+                    description: URL of the candidate's profile picture.
+                created-at:
+                    type: string
+                    examples:
+                        - 2024-01-15T10:30:00Z
+                    description: RFC 3339 creation timestamp.
+                    example: 2024-01-15T10:30:00Z
+                updated-at:
+                    type: string
+                    description: RFC 3339 last-update timestamp.
+                internal:
+                    type: boolean
+                    description: True when the candidate was added internally rather than via a public form.
+                referring-url:
+                    type: string
+                    description: Referrer page URL.
+                referring-site:
+                    type: string
+                    description: Referrer site name.
+                referred:
+                    type: boolean
+                    description: True when the candidate was referred by an existing user.
+                connected:
+                    type: boolean
+                    description: True when the candidate is connected (has subscribed to updates).
+                unsubscribed:
+                    type: boolean
+                    description: True when the candidate has unsubscribed from communications.
+            description: |-
+                CandidateAttributes mirrors the JSON:API `attributes` object for a candidate.
+                 JSON keys on the wire use hyphens (`first-name`, `created-at`), mapped here
+                 via `json_name` so protojson emits and accepts the correct names.
+        CandidateRelationships:
+            type: object
+            properties:
+                department:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                role:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                regions:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                locations:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                custom-field-values:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                job-applications:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                activities:
+                    $ref: '#/components/schemas/ToManyRelationship'
+            description: |-
+                CandidateRelationships captures the JSON:API `relationships` block for a candidate.
+                 Each field uses the appropriate to-one or to-many shape per Teamtailor's schema.
+        ToOneRelationship:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/ResourceIdentifier'
+                links:
+                    $ref: '#/components/schemas/Links'
+            description: |-
+                ToOneRelationship is a JSON:API to-one relationship: a single resource
+                 identifier under `data`, plus optional links.
+        ResourceIdentifier:
+            type: object
+            properties:
+                type:
+                    type: string
+                    description: Resource type, e.g. "candidates", "jobs", "departments".
+                id:
+                    type: string
+                    description: Resource ID.
+            description: |-
+                ResourceIdentifier is the JSON:API `{ "type": "...", "id": "..." }` shape used
+                 to reference another resource (e.g. inside relationships objects).
+        Links:
+            type: object
+            properties:
+                first:
+                    type: string
+                    description: URL of the first page of results.
+                last:
+                    type: string
+                    description: URL of the last page of results.
+                next:
+                    type: string
+                    description: URL of the next page of results, empty when on the last page.
+                prev:
+                    type: string
+                    description: URL of the previous page of results, empty when on the first page.
+                self:
+                    type: string
+                    description: URL of the current resource (set on individual resources, not lists).
+                related:
+                    type: string
+                    description: URL of a related resource (set inside relationships objects).
+            description: |-
+                Links is the JSON:API top-level/relationship `links` object.
+                 All fields are absolute URLs to other pages or related resources.
+        ToManyRelationship:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ResourceIdentifier'
+                links:
+                    $ref: '#/components/schemas/Links'
+            description: |-
+                ToManyRelationship is a JSON:API to-many relationship: an array of resource
+                 identifiers under `data`, plus optional links.
+        Meta:
+            type: object
+            properties:
+                record-count:
+                    type: integer
+                    format: int32
+                    description: Total number of records matching the request (across all pages).
+                page-count:
+                    type: integer
+                    format: int32
+                    description: Total number of pages.
+            description: Meta is the JSON:API top-level `meta` object returned alongside list responses.

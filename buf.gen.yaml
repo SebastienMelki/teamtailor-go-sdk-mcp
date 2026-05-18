@@ -15,11 +15,6 @@ plugins:
     out: ./internal/gen
     opt: module=github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen
 
-  - local: protoc-gen-go-http
-    out: ./internal/gen
-    opt:
-      - module=github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen
-
   - local: protoc-gen-openapiv3
     out: ./docs
 

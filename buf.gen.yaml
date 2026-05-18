@@ -1,0 +1,29 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen
+    - file_option: go_package_prefix
+      module: buf.build/bufbuild/protovalidate
+      value: ""
+    - file_option: go_package_prefix
+      module: buf.build/sebmelki/sebuf
+      value: ""
+plugins:
+  - local: protoc-gen-go
+    out: ./internal/gen
+    opt: module=github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen
+
+  - local: protoc-gen-go-http
+    out: ./internal/gen
+    opt:
+      - module=github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen
+
+  - local: protoc-gen-openapiv3
+    out: ./docs
+
+  - local: protoc-gen-go-client
+    out: ./internal/gen
+    opt:
+      - module=github.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen

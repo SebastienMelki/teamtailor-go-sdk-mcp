@@ -28,5 +28,13 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
+.idea/
 # .vscode/
+.DS_Store
+
+# Local scratch / agent memory
+memory/
+cmd/tmptest/
+
+# Build artifacts
+bin/

@@ -7,7 +7,7 @@ A Go SDK + MCP server for the [Teamtailor API](https://docs.teamtailor.com/), ge
 ## What it ships
 
 - **`pkg/teamtailor`** — type-safe Go client for the Teamtailor API
-- **`mcp/cmd/teamtailor-mcp`** — Model Context Protocol stdio server exposing the SDK as tools for LLM agents (Claude Desktop, Claude Code, etc.)
+- **`mcp/cmd/teamtailor-mcp`** — Model Context Protocol stdio server exposing the SDK as tools for any MCP-compatible client
 - **`docs/`** — generated OpenAPI 3.1 specs
 
 ## Quick start (SDK)
@@ -40,7 +40,7 @@ func main() {
 
 ## Quick start (MCP)
 
-Add to your MCP client config (Claude Desktop / Claude Code):
+Add to your MCP client config:
 
 ```json
 {
@@ -63,7 +63,7 @@ Proto definitions in `teamtailor/v1/` are the single source of truth. Running `m
 
 The `pkg/teamtailor` package is a thin hand-written wrapper that configures auth + base URL + API version on the generated client. The MCP server in `mcp/` wraps the SDK with one tool per operation.
 
-See `CLAUDE.md` for conventions.
+See `AGENTS.md` for conventions.
 
 ## Development
 

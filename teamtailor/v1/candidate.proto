@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/common.proto";
+
+// Candidate is a JSON:API resource of type `candidates`.
+//
+// Shape on the wire:
+// {
+//   "type": "candidates",
+//   "id": "123",
+//   "attributes": { "first-name": "...", ... },
+//   "relationships": { ... },
+//   "links": { "self": "..." }
+// }
+message Candidate {
+  // JSON:API resource type, always "candidates" for this message.
+  string type = 1 [(sebuf.http.field_examples) = { values: ["candidates"] }];
+
+  // Teamtailor candidate ID.
+  string id = 2 [(sebuf.http.field_examples) = { values: ["12345"] }];
+
+  // Attributes block.
+  CandidateAttributes attributes = 3;
+
+  // Relationships to other resources (departments, roles, locations, etc.).
+  CandidateRelationships relationships = 4;
+
+  // Links to this resource.
+  Links links = 5;
+}
+
+// CandidateAttributes mirrors the JSON:API `attributes` object for a candidate.
+// JSON keys on the wire use hyphens (`first-name`, `created-at`), mapped here
+// via `json_name` so protojson emits and accepts the correct names.
+message CandidateAttributes {
+  // Candidate's first/given name.
+  string first_name = 1 [
+    json_name = "first-name",
+    (sebuf.http.field_examples) = { values: ["Jane"] }
+  ];
+
+  // Candidate's last/family name.
+  string last_name = 2 [
+    json_name = "last-name",
+    (sebuf.http.field_examples) = { values: ["Doe"] }
+  ];
+
+  // Email address.
+  string email = 3 [(sebuf.http.field_examples) = { values: ["jane.doe@example.com"] }];
+
+  // Phone number.
+  string phone = 4 [(sebuf.http.field_examples) = { values: ["+1-555-123-4567"] }];
+
+  // Short pitch / candidate summary.
+  string pitch = 5;
+
+  // Whether the candidate was sourced (proactively added) rather than self-applied.
+  bool sourced = 6;
+
+  // Free-form tags applied to the candidate.
+  repeated string tags = 7;
+
+  // LinkedIn profile URL.
+  string linkedin_url = 8 [json_name = "linkedin-url"];
+
+  // Facebook profile ID.
+  string facebook_id = 9 [json_name = "facebook-id"];
+
+  // Twitter handle (without leading @).
+  string twitter_name = 10 [json_name = "twitter-name"];
+
+  // URL of the most recently uploaded resume (transformed by Teamtailor).
+  string resume = 11;
+
+  // URL of the original uploaded resume file.
+  string original_resume = 12 [json_name = "original-resume"];
+
+  // URL of the candidate's profile picture.
+  string picture = 13;
+
+  // RFC 3339 creation timestamp.
+  string created_at = 14 [
+    json_name = "created-at",
+    (sebuf.http.field_examples) = { values: ["2024-01-15T10:30:00Z"] }
+  ];
+
+  // RFC 3339 last-update timestamp.
+  string updated_at = 15 [json_name = "updated-at"];
+
+  // True when the candidate was added internally rather than via a public form.
+  bool internal = 16;
+
+  // Referrer page URL.
+  string referring_url = 17 [json_name = "referring-url"];
+
+  // Referrer site name.
+  string referring_site = 18 [json_name = "referring-site"];
+
+  // True when the candidate was referred by an existing user.
+  bool referred = 19;
+
+  // True when the candidate is connected (has subscribed to updates).
+  bool connected = 20;
+
+  // True when the candidate has unsubscribed from communications.
+  bool unsubscribed = 21;
+}
+
+// CandidateRelationships captures the JSON:API `relationships` block for a candidate.
+// Each field uses the appropriate to-one or to-many shape per Teamtailor's schema.
+message CandidateRelationships {
+  // The department associated with this candidate.
+  ToOneRelationship department = 1;
+
+  // The role/job-title associated with this candidate.
+  ToOneRelationship role = 2;
+
+  // Regions the candidate is associated with.
+  ToManyRelationship regions = 3;
+
+  // Locations the candidate is associated with.
+  ToManyRelationship locations = 4;
+
+  // Custom field values attached to this candidate.
+  ToManyRelationship custom_field_values = 5 [json_name = "custom-field-values"];
+
+  // Job applications this candidate has submitted.
+  ToManyRelationship job_applications = 6 [json_name = "job-applications"];
+
+  // Activities (events, notes, etc.) on this candidate.
+  ToManyRelationship activities = 7;
+}

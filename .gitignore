@@ -38,3 +38,5 @@ cmd/tmptest/
 
 # Build artifacts
 bin/
+
+.claude

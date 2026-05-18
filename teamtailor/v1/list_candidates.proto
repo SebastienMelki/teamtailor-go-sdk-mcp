@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/candidate.proto";
+import "teamtailor/v1/common.proto";
+
+// ListCandidatesRequest is the request shape for GET /v1/candidates.
+// All fields map to JSON:API query parameters. Bracketed names like `page[size]`
+// and `filter[email]` are preserved verbatim via `sebuf.http.query.name`.
+message ListCandidatesRequest {
+  // Number of records per page (Teamtailor caps at 30).
+  int32 page_size = 1 [
+    (sebuf.http.query) = { name: "page[size]" },
+    (sebuf.http.field_examples) = { values: ["10"] }
+  ];
+
+  // Cursor for the next page (opaque token returned in `links.next`).
+  string page_after = 2 [(sebuf.http.query) = { name: "page[after]" }];
+
+  // Cursor for the previous page (opaque token returned in `links.prev`).
+  string page_before = 3 [(sebuf.http.query) = { name: "page[before]" }];
+
+  // Filter candidates by exact email match.
+  string filter_email = 4 [
+    (sebuf.http.query) = { name: "filter[email]" },
+    (sebuf.http.field_examples) = { values: ["jane.doe@example.com"] }
+  ];
+
+  // Filter candidates updated after this RFC 3339 timestamp.
+  string filter_updated_at_from = 5 [
+    (sebuf.http.query) = { name: "filter[updated-at][from]" }
+  ];
+
+  // Filter candidates updated before this RFC 3339 timestamp.
+  string filter_updated_at_to = 6 [
+    (sebuf.http.query) = { name: "filter[updated-at][to]" }
+  ];
+
+  // Comma-separated relationships to sideload, e.g. "department,locations".
+  string include = 7 [
+    (sebuf.http.query) = { name: "include" },
+    (sebuf.http.field_examples) = { values: ["department,locations"] }
+  ];
+
+  // Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
+  string sort = 8 [
+    (sebuf.http.query) = { name: "sort" },
+    (sebuf.http.field_examples) = { values: ["-created-at"] }
+  ];
+
+  // Sparse fieldset: comma-separated attribute names to return on candidates.
+  string fields_candidates = 9 [
+    (sebuf.http.query) = { name: "fields[candidates]" }
+  ];
+}
+
+// ListCandidatesResponse is the JSON:API document returned by GET /v1/candidates.
+message ListCandidatesResponse {
+  // List of candidate resources.
+  repeated Candidate data = 1;
+
+  // Pagination links.
+  Links links = 2;
+
+  // Pagination metadata (record-count, page-count).
+  Meta meta = 3;
+}

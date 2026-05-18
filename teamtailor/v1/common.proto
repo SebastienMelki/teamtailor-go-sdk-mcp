@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+// Links is the JSON:API top-level/relationship `links` object.
+// All fields are absolute URLs to other pages or related resources.
+message Links {
+  // URL of the first page of results.
+  string first = 1;
+
+  // URL of the last page of results.
+  string last = 2;
+
+  // URL of the next page of results, empty when on the last page.
+  string next = 3;
+
+  // URL of the previous page of results, empty when on the first page.
+  string prev = 4;
+
+  // URL of the current resource (set on individual resources, not lists).
+  string self = 5;
+
+  // URL of a related resource (set inside relationships objects).
+  string related = 6;
+}
+
+// Meta is the JSON:API top-level `meta` object returned alongside list responses.
+message Meta {
+  // Total number of records matching the request (across all pages).
+  int32 record_count = 1 [json_name = "record-count"];
+
+  // Total number of pages.
+  int32 page_count = 2 [json_name = "page-count"];
+}
+
+// ResourceIdentifier is the JSON:API `{ "type": "...", "id": "..." }` shape used
+// to reference another resource (e.g. inside relationships objects).
+message ResourceIdentifier {
+  // Resource type, e.g. "candidates", "jobs", "departments".
+  string type = 1;
+
+  // Resource ID.
+  string id = 2;
+}
+
+// ToOneRelationship is a JSON:API to-one relationship: a single resource
+// identifier under `data`, plus optional links.
+message ToOneRelationship {
+  // The referenced resource (its type and id).
+  ResourceIdentifier data = 1;
+
+  // Links related to this relationship.
+  Links links = 2;
+}
+
+// ToManyRelationship is a JSON:API to-many relationship: an array of resource
+// identifiers under `data`, plus optional links.
+message ToManyRelationship {
+  // The referenced resources.
+  repeated ResourceIdentifier data = 1;
+
+  // Links related to this relationship.
+  Links links = 2;
+}
+
+// JsonApiError is one error object inside a JSON:API error response.
+// Name ends with `Error` so sebuf auto-implements Go's `error` interface.
+message JsonApiError {
+  // HTTP status code as a string (e.g. "404").
+  string status = 1;
+
+  // Application-specific error code.
+  string code = 2;
+
+  // Short human-readable summary.
+  string title = 3;
+
+  // Detailed human-readable explanation.
+  string detail = 4;
+
+  // Reference to where the error came from.
+  ErrorSource source = 5;
+}
+
+// ErrorSource pinpoints the cause of an error inside the request.
+message ErrorSource {
+  // JSON Pointer to the offending value in the request document.
+  string pointer = 1;
+
+  // Name of the offending query parameter.
+  string parameter = 2;
+
+  // Name of the offending header.
+  string header = 3;
+}
+
+// JsonApiErrorResponse is the top-level JSON:API error document.
+// Name ends with `Error`-like pattern; Go wrapper treats this as the error
+// payload when the HTTP response is non-2xx.
+message JsonApiErrorResponse {
+  // One or more error objects.
+  repeated JsonApiError errors = 1;
+}

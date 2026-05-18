@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+import "sebuf/http/headers.proto";
+
+import "teamtailor/v1/list_candidates.proto";
+
+// TeamtailorService wraps the Teamtailor public API (https://docs.teamtailor.com/).
+//
+// All endpoints live under `/v1` and speak JSON:API (`application/vnd.api+json`).
+// Authentication uses an immutable API key passed verbatim as
+// `Authorization: Token token=<API_KEY>`, plus a dated `X-Api-Version` header.
+service TeamtailorService {
+  // Base path applied to every RPC.
+  option (sebuf.http.service_config) = {
+    base_path: "/v1"
+  };
+
+  // Headers required by every request. The Go wrapper in `pkg/teamtailor` fills
+  // these in via the generated `With*` option functions.
+  option (sebuf.http.service_headers) = {
+    required_headers: [
+      {
+        name: "Authorization"
+        description: "Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper."
+        type: "string"
+        required: true
+        example: "Token token=ABC123"
+      },
+      {
+        name: "X-Api-Version"
+        description: "Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper."
+        type: "string"
+        required: true
+        example: "20240904"
+      },
+      {
+        name: "Accept"
+        description: "application/vnd.api+json — JSON:API accept type. Set by the Go wrapper."
+        type: "string"
+        required: true
+        example: "application/vnd.api+json"
+      }
+    ]
+  };
+
+  // ============================================
+  // Candidate Operations
+  // ============================================
+
+  // ListCandidates returns a paginated list of candidates.
+  // GET /v1/candidates
+  rpc ListCandidates(ListCandidatesRequest) returns (ListCandidatesResponse) {
+    option (sebuf.http.config) = {
+      path: "/candidates"
+      method: HTTP_METHOD_GET
+    };
+  }
+}

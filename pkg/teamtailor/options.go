@@ -39,10 +39,14 @@ type options struct {
 
 func defaultOptions() *options {
 	return &options{
-		httpClient:           http.DefaultClient,
-		region:               RegionEU,
-		apiVersion:           DefaultAPIVersion,
-		discardUnknownFields: false,
+		httpClient: http.DefaultClient,
+		region:     RegionEU,
+		apiVersion: DefaultAPIVersion,
+		// Default to discarding unknown fields. Teamtailor occasionally
+		// adds attributes to existing resources, and a typed Go SDK
+		// pinned to an older proto should ignore them rather than
+		// failing every response. Opt out with WithDiscardUnknownFields(false).
+		discardUnknownFields: true,
 	}
 }
 

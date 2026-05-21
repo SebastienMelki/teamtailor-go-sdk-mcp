@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/common.proto";
+import "teamtailor/v1/job_application.proto";
+
+// ListJobApplicationsRequest is the request shape for GET /v1/job-applications.
+//
+// Use this to pull a candidate's pipeline status. Sideload `stage` to resolve
+// the status to a human-readable stage name in one round-trip:
+//
+//   GET /v1/job-applications?include=stage,candidate
+message ListJobApplicationsRequest {
+  // Number of records per page (Teamtailor caps at 30).
+  int32 page_size = 1 [
+    (sebuf.http.query) = { name: "page[size]" },
+    (sebuf.http.field_examples) = { values: ["10"] }
+  ];
+
+  // 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+  int32 page_number = 2 [(sebuf.http.query) = { name: "page[number]" }];
+
+  // Filter by current stage type: "Inbox", "In process", or "Hired".
+  string filter_stage_type = 3 [
+    (sebuf.http.query) = { name: "filter[stage-type]" },
+    (sebuf.http.field_examples) = { values: ["In process"] }
+  ];
+
+  // Filter applications to a single job (position) id. Not in the Postman
+  // table but follows the JSON:API convention used by `filter[job]` on
+  // /v1/stages and /v1/uploads.
+  string filter_job = 13 [
+    (sebuf.http.query) = { name: "filter[job]" },
+    (sebuf.http.field_examples) = { values: ["123"] }
+  ];
+
+  // Filter applications by candidate id.
+  string filter_candidate = 14 [
+    (sebuf.http.query) = { name: "filter[candidate]" }
+  ];
+
+  // Filter applications created after this RFC 3339 timestamp.
+  string filter_created_at_from = 4 [
+    (sebuf.http.query) = { name: "filter[created-at][from]" }
+  ];
+
+  // Filter applications created before this RFC 3339 timestamp.
+  string filter_created_at_to = 5 [
+    (sebuf.http.query) = { name: "filter[created-at][to]" }
+  ];
+
+  // Filter applications updated after this RFC 3339 timestamp.
+  string filter_updated_at_from = 6 [
+    (sebuf.http.query) = { name: "filter[updated-at][from]" }
+  ];
+
+  // Filter applications updated before this RFC 3339 timestamp.
+  string filter_updated_at_to = 7 [
+    (sebuf.http.query) = { name: "filter[updated-at][to]" }
+  ];
+
+  // Filter applications whose `changed-stage-at` is newer than this RFC 3339 timestamp.
+  string filter_changed_stage_at_from = 8 [
+    (sebuf.http.query) = { name: "filter[changed-stage-at][from]" }
+  ];
+
+  // Filter applications whose `changed-stage-at` is older than this RFC 3339 timestamp.
+  string filter_changed_stage_at_to = 9 [
+    (sebuf.http.query) = { name: "filter[changed-stage-at][to]" }
+  ];
+
+  // Comma-separated relationships to sideload, e.g. "stage,candidate,job,reject-reason".
+  string include = 10 [
+    (sebuf.http.query) = { name: "include" },
+    (sebuf.http.field_examples) = { values: ["stage,candidate"] }
+  ];
+
+  // Sort order, e.g. "-changed-stage-at" for latest-moved first.
+  string sort = 11 [
+    (sebuf.http.query) = { name: "sort" },
+    (sebuf.http.field_examples) = { values: ["-changed-stage-at"] }
+  ];
+
+  // Sparse fieldset: comma-separated attribute names to return on job-applications.
+  string fields_job_applications = 12 [
+    (sebuf.http.query) = { name: "fields[job-applications]" }
+  ];
+}
+
+// ListJobApplicationsResponse is the JSON:API document returned by GET /v1/job-applications.
+message ListJobApplicationsResponse {
+  // List of job-application resources.
+  repeated JobApplication data = 1;
+
+  // Pagination links.
+  Links links = 2;
+
+  // Pagination metadata.
+  Meta meta = 3;
+}

@@ -26,6 +26,9 @@ const (
 // ListCandidatesRequest is the request shape for GET /v1/candidates.
 // All fields map to JSON:API query parameters. Bracketed names like `page[size]`
 // and `filter[email]` are preserved verbatim via `sebuf.http.query.name`.
+//
+// Filters available per the Teamtailor docs: email, division, department, role,
+// locations, regions, created-at[from|to], updated-at[from|to], connected, phone.
 type ListCandidatesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Number of records per page (Teamtailor caps at 30).
@@ -36,16 +39,34 @@ type ListCandidatesRequest struct {
 	PageBefore string `protobuf:"bytes,3,opt,name=page_before,json=pageBefore,proto3" json:"page_before,omitempty"`
 	// Filter candidates by exact email match.
 	FilterEmail string `protobuf:"bytes,4,opt,name=filter_email,json=filterEmail,proto3" json:"filter_email,omitempty"`
+	// Filter candidates by division id.
+	FilterDivision string `protobuf:"bytes,5,opt,name=filter_division,json=filterDivision,proto3" json:"filter_division,omitempty"`
+	// Filter candidates by department id.
+	FilterDepartment string `protobuf:"bytes,6,opt,name=filter_department,json=filterDepartment,proto3" json:"filter_department,omitempty"`
+	// Filter candidates by role id.
+	FilterRole string `protobuf:"bytes,7,opt,name=filter_role,json=filterRole,proto3" json:"filter_role,omitempty"`
+	// Filter candidates by location id (comma-separated for multiple).
+	FilterLocations string `protobuf:"bytes,8,opt,name=filter_locations,json=filterLocations,proto3" json:"filter_locations,omitempty"`
+	// Filter candidates by region id (comma-separated for multiple).
+	FilterRegions string `protobuf:"bytes,9,opt,name=filter_regions,json=filterRegions,proto3" json:"filter_regions,omitempty"`
+	// Filter candidates created after this RFC 3339 timestamp.
+	FilterCreatedAtFrom string `protobuf:"bytes,10,opt,name=filter_created_at_from,json=filterCreatedAtFrom,proto3" json:"filter_created_at_from,omitempty"`
+	// Filter candidates created before this RFC 3339 timestamp.
+	FilterCreatedAtTo string `protobuf:"bytes,11,opt,name=filter_created_at_to,json=filterCreatedAtTo,proto3" json:"filter_created_at_to,omitempty"`
 	// Filter candidates updated after this RFC 3339 timestamp.
-	FilterUpdatedAtFrom string `protobuf:"bytes,5,opt,name=filter_updated_at_from,json=filterUpdatedAtFrom,proto3" json:"filter_updated_at_from,omitempty"`
+	FilterUpdatedAtFrom string `protobuf:"bytes,12,opt,name=filter_updated_at_from,json=filterUpdatedAtFrom,proto3" json:"filter_updated_at_from,omitempty"`
 	// Filter candidates updated before this RFC 3339 timestamp.
-	FilterUpdatedAtTo string `protobuf:"bytes,6,opt,name=filter_updated_at_to,json=filterUpdatedAtTo,proto3" json:"filter_updated_at_to,omitempty"`
-	// Comma-separated relationships to sideload, e.g. "department,locations".
-	Include string `protobuf:"bytes,7,opt,name=include,proto3" json:"include,omitempty"`
-	// Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
-	Sort string `protobuf:"bytes,8,opt,name=sort,proto3" json:"sort,omitempty"`
+	FilterUpdatedAtTo string `protobuf:"bytes,13,opt,name=filter_updated_at_to,json=filterUpdatedAtTo,proto3" json:"filter_updated_at_to,omitempty"`
+	// Filter by connected status ("true" or "false").
+	FilterConnected string `protobuf:"bytes,14,opt,name=filter_connected,json=filterConnected,proto3" json:"filter_connected,omitempty"`
+	// Filter by phone number (6-14 chars, may include `+`).
+	FilterPhone string `protobuf:"bytes,15,opt,name=filter_phone,json=filterPhone,proto3" json:"filter_phone,omitempty"`
+	// Comma-separated relationships to sideload, e.g. "department,locations,job-applications,job-applications.stage".
+	Include string `protobuf:"bytes,16,opt,name=include,proto3" json:"include,omitempty"`
+	// Sort order, e.g. "id" (default ascending) or "-id" (descending). Accepts any candidate attribute.
+	Sort string `protobuf:"bytes,17,opt,name=sort,proto3" json:"sort,omitempty"`
 	// Sparse fieldset: comma-separated attribute names to return on candidates.
-	FieldsCandidates string `protobuf:"bytes,9,opt,name=fields_candidates,json=fieldsCandidates,proto3" json:"fields_candidates,omitempty"`
+	FieldsCandidates string `protobuf:"bytes,18,opt,name=fields_candidates,json=fieldsCandidates,proto3" json:"fields_candidates,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -108,6 +129,55 @@ func (x *ListCandidatesRequest) GetFilterEmail() string {
 	return ""
 }
 
+func (x *ListCandidatesRequest) GetFilterDivision() string {
+	if x != nil {
+		return x.FilterDivision
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterDepartment() string {
+	if x != nil {
+		return x.FilterDepartment
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterRole() string {
+	if x != nil {
+		return x.FilterRole
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterLocations() string {
+	if x != nil {
+		return x.FilterLocations
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterRegions() string {
+	if x != nil {
+		return x.FilterRegions
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterCreatedAtFrom() string {
+	if x != nil {
+		return x.FilterCreatedAtFrom
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterCreatedAtTo() string {
+	if x != nil {
+		return x.FilterCreatedAtTo
+	}
+	return ""
+}
+
 func (x *ListCandidatesRequest) GetFilterUpdatedAtFrom() string {
 	if x != nil {
 		return x.FilterUpdatedAtFrom
@@ -118,6 +188,20 @@ func (x *ListCandidatesRequest) GetFilterUpdatedAtFrom() string {
 func (x *ListCandidatesRequest) GetFilterUpdatedAtTo() string {
 	if x != nil {
 		return x.FilterUpdatedAtTo
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterConnected() string {
+	if x != nil {
+		return x.FilterConnected
+	}
+	return ""
+}
+
+func (x *ListCandidatesRequest) GetFilterPhone() string {
+	if x != nil {
+		return x.FilterPhone
 	}
 	return ""
 }
@@ -211,7 +295,7 @@ var File_teamtailor_v1_list_candidates_proto protoreflect.FileDescriptor
 
 const file_teamtailor_v1_list_candidates_proto_rawDesc = "" +
 	"\n" +
-	"#teamtailor/v1/list_candidates.proto\x12\rteamtailor.v1\x1a\x1csebuf/http/annotations.proto\x1a\x1dteamtailor/v1/candidate.proto\x1a\x1ateamtailor/v1/common.proto\"\xe6\x04\n" +
+	"#teamtailor/v1/list_candidates.proto\x12\rteamtailor.v1\x1a\x1csebuf/http/annotations.proto\x1a\x1dteamtailor/v1/candidate.proto\x1a\x1ateamtailor/v1/common.proto\"\xd0\t\n" +
 	"\x15ListCandidatesRequest\x125\n" +
 	"\tpage_size\x18\x01 \x01(\x05B\x18\xba\xb5\x18\x04\n" +
 	"\x0210µ\x18\f\n" +
@@ -225,18 +309,38 @@ const file_teamtailor_v1_list_candidates_proto_rawDesc = "" +
 	"pageBefore\x12P\n" +
 	"\ffilter_email\x18\x04 \x01(\tB-\xba\xb5\x18\x16\n" +
 	"\x14jane.doe@example.comµ\x18\x0f\n" +
-	"\rfilter[email]R\vfilterEmail\x12S\n" +
-	"\x16filter_updated_at_from\x18\x05 \x01(\tB\x1eµ\x18\x1a\n" +
+	"\rfilter[email]R\vfilterEmail\x12?\n" +
+	"\x0ffilter_division\x18\x05 \x01(\tB\x16µ\x18\x12\n" +
+	"\x10filter[division]R\x0efilterDivision\x12E\n" +
+	"\x11filter_department\x18\x06 \x01(\tB\x18µ\x18\x14\n" +
+	"\x12filter[department]R\x10filterDepartment\x123\n" +
+	"\vfilter_role\x18\a \x01(\tB\x12µ\x18\x0e\n" +
+	"\ffilter[role]R\n" +
+	"filterRole\x12B\n" +
+	"\x10filter_locations\x18\b \x01(\tB\x17µ\x18\x13\n" +
+	"\x11filter[locations]R\x0ffilterLocations\x12<\n" +
+	"\x0efilter_regions\x18\t \x01(\tB\x15µ\x18\x11\n" +
+	"\x0ffilter[regions]R\rfilterRegions\x12S\n" +
+	"\x16filter_created_at_from\x18\n" +
+	" \x01(\tB\x1eµ\x18\x1a\n" +
+	"\x18filter[created-at][from]R\x13filterCreatedAtFrom\x12M\n" +
+	"\x14filter_created_at_to\x18\v \x01(\tB\x1cµ\x18\x18\n" +
+	"\x16filter[created-at][to]R\x11filterCreatedAtTo\x12S\n" +
+	"\x16filter_updated_at_from\x18\f \x01(\tB\x1eµ\x18\x1a\n" +
 	"\x18filter[updated-at][from]R\x13filterUpdatedAtFrom\x12M\n" +
-	"\x14filter_updated_at_to\x18\x06 \x01(\tB\x1cµ\x18\x18\n" +
-	"\x16filter[updated-at][to]R\x11filterUpdatedAtTo\x12A\n" +
-	"\ainclude\x18\a \x01(\tB'\xba\xb5\x18\x16\n" +
-	"\x14department,locationsµ\x18\t\n" +
-	"\aincludeR\ainclude\x12/\n" +
-	"\x04sort\x18\b \x01(\tB\x1b\xba\xb5\x18\r\n" +
-	"\v-created-atµ\x18\x06\n" +
+	"\x14filter_updated_at_to\x18\r \x01(\tB\x1cµ\x18\x18\n" +
+	"\x16filter[updated-at][to]R\x11filterUpdatedAtTo\x12B\n" +
+	"\x10filter_connected\x18\x0e \x01(\tB\x17µ\x18\x13\n" +
+	"\x11filter[connected]R\x0ffilterConnected\x126\n" +
+	"\ffilter_phone\x18\x0f \x01(\tB\x13µ\x18\x0f\n" +
+	"\rfilter[phone]R\vfilterPhone\x12T\n" +
+	"\ainclude\x18\x10 \x01(\tB:\xba\xb5\x18)\n" +
+	"'job-applications,job-applications.stageµ\x18\t\n" +
+	"\aincludeR\ainclude\x12'\n" +
+	"\x04sort\x18\x11 \x01(\tB\x13\xba\xb5\x18\x05\n" +
+	"\x03-idµ\x18\x06\n" +
 	"\x04sortR\x04sort\x12E\n" +
-	"\x11fields_candidates\x18\t \x01(\tB\x18µ\x18\x14\n" +
+	"\x11fields_candidates\x18\x12 \x01(\tB\x18µ\x18\x14\n" +
 	"\x12fields[candidates]R\x10fieldsCandidates\"\x9b\x01\n" +
 	"\x16ListCandidatesResponse\x12,\n" +
 	"\x04data\x18\x01 \x03(\v2\x18.teamtailor.v1.CandidateR\x04data\x12*\n" +

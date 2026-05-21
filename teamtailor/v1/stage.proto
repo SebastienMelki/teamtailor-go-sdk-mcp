@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/common.proto";
+
+// Stage is a JSON:API resource of type `stages`.
+//
+// A stage represents one column in a job's hiring pipeline (Inbox, Reviewing,
+// Interview, Offered, Hired, etc.). A candidate's "status" on a given job is
+// the stage their JobApplication currently points to.
+message Stage {
+  // JSON:API resource type, always "stages" for this message.
+  string type = 1 [(sebuf.http.field_examples) = { values: ["stages"] }];
+
+  // Teamtailor stage id.
+  string id = 2 [(sebuf.http.field_examples) = { values: ["1"] }];
+
+  // Attributes block.
+  StageAttributes attributes = 3;
+
+  // Relationships to job-applications, triggers, job, and stage-type.
+  StageRelationships relationships = 4;
+
+  // Links to this resource.
+  Links links = 5;
+}
+
+// StageAttributes mirrors the JSON:API `attributes` object on a stage.
+message StageAttributes {
+  // Human-readable stage name — e.g. "Inbox", "Interview", "Hired".
+  // This is the user-facing status label.
+  string name = 1 [(sebuf.http.field_examples) = { values: ["Interview"] }];
+
+  // Stage-type bucket from the legacy API: "Inbox", "In process", or "Hired".
+  // Useful for grouping custom stages by lifecycle phase.
+  string legacy_stage_type_name = 2 [json_name = "legacy-stage-type-name"];
+
+  // Sortable position of this stage within its job's pipeline.
+  int32 row_order = 3 [json_name = "row-order"];
+
+  // Number of active (non-rejected) job-applications currently in this stage.
+  int32 active_job_applications_count = 4 [json_name = "active-job-applications-count"];
+
+  // Number of rejected job-applications currently in this stage.
+  int32 rejected_job_applications_count = 5 [json_name = "rejected-job-applications-count"];
+
+  // RFC 3339 creation timestamp.
+  string created_at = 6 [json_name = "created-at"];
+
+  // RFC 3339 last-update timestamp.
+  string updated_at = 7 [json_name = "updated-at"];
+}
+
+// StageRelationships captures the JSON:API `relationships` block on a stage.
+message StageRelationships {
+  // Job-applications currently in this stage.
+  ToManyRelationship job_applications = 1 [json_name = "job-applications"];
+
+  // Automated triggers configured on this stage.
+  ToManyRelationship triggers = 2;
+
+  // The job this stage belongs to.
+  ToOneRelationship job = 3;
+
+  // The stage-type classifying this stage.
+  ToOneRelationship stage_type = 4 [json_name = "stage-type"];
+}

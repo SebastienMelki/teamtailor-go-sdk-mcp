@@ -136,32 +136,39 @@ type CandidateAttributes struct {
 	Tags []string `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty"`
 	// LinkedIn profile URL.
 	LinkedinUrl string `protobuf:"bytes,8,opt,name=linkedin_url,json=linkedin-url,proto3" json:"linkedin_url,omitempty"`
-	// Facebook profile ID.
-	FacebookId string `protobuf:"bytes,9,opt,name=facebook_id,json=facebook-id,proto3" json:"facebook_id,omitempty"`
-	// Twitter handle (without leading @).
-	TwitterName string `protobuf:"bytes,10,opt,name=twitter_name,json=twitter-name,proto3" json:"twitter_name,omitempty"`
+	// LinkedIn user ID extracted from `linkedin_url` (set when Teamtailor can resolve it).
+	LinkedinUid string `protobuf:"bytes,9,opt,name=linkedin_uid,json=linkedin-uid,proto3" json:"linkedin_uid,omitempty"`
+	// LinkedIn public profile snapshot (object), present when Teamtailor has imported it.
+	LinkedinProfile string `protobuf:"bytes,10,opt,name=linkedin_profile,json=linkedin-profile,proto3" json:"linkedin_profile,omitempty"`
+	// Facebook user ID extracted from the candidate's Facebook profile.
+	FacebookId string `protobuf:"bytes,11,opt,name=facebook_id,json=facebook-id,proto3" json:"facebook_id,omitempty"`
+	// Facebook public profile snapshot, present when Teamtailor has imported it.
+	FacebookProfile string `protobuf:"bytes,12,opt,name=facebook_profile,json=facebook-profile,proto3" json:"facebook_profile,omitempty"`
 	// URL of the most recently uploaded resume (transformed by Teamtailor).
-	Resume string `protobuf:"bytes,11,opt,name=resume,proto3" json:"resume,omitempty"`
+	Resume string `protobuf:"bytes,13,opt,name=resume,proto3" json:"resume,omitempty"`
 	// URL of the original uploaded resume file.
-	OriginalResume string `protobuf:"bytes,12,opt,name=original_resume,json=original-resume,proto3" json:"original_resume,omitempty"`
+	OriginalResume string `protobuf:"bytes,14,opt,name=original_resume,json=original-resume,proto3" json:"original_resume,omitempty"`
+	// Teamtailor-generated text summary of the resume (snake_case on the wire,
+	// unlike other candidate attributes).
+	ResumeSummary string `protobuf:"bytes,15,opt,name=resume_summary,proto3" json:"resume_summary,omitempty"`
 	// URL of the candidate's profile picture.
-	Picture string `protobuf:"bytes,13,opt,name=picture,proto3" json:"picture,omitempty"`
+	Picture string `protobuf:"bytes,16,opt,name=picture,proto3" json:"picture,omitempty"`
 	// RFC 3339 creation timestamp.
-	CreatedAt string `protobuf:"bytes,14,opt,name=created_at,json=created-at,proto3" json:"created_at,omitempty"`
+	CreatedAt string `protobuf:"bytes,17,opt,name=created_at,json=created-at,proto3" json:"created_at,omitempty"`
 	// RFC 3339 last-update timestamp.
-	UpdatedAt string `protobuf:"bytes,15,opt,name=updated_at,json=updated-at,proto3" json:"updated_at,omitempty"`
+	UpdatedAt string `protobuf:"bytes,18,opt,name=updated_at,json=updated-at,proto3" json:"updated_at,omitempty"`
 	// True when the candidate was added internally rather than via a public form.
-	Internal bool `protobuf:"varint,16,opt,name=internal,proto3" json:"internal,omitempty"`
+	Internal bool `protobuf:"varint,19,opt,name=internal,proto3" json:"internal,omitempty"`
 	// Referrer page URL.
-	ReferringUrl string `protobuf:"bytes,17,opt,name=referring_url,json=referring-url,proto3" json:"referring_url,omitempty"`
+	ReferringUrl string `protobuf:"bytes,20,opt,name=referring_url,json=referring-url,proto3" json:"referring_url,omitempty"`
 	// Referrer site name.
-	ReferringSite string `protobuf:"bytes,18,opt,name=referring_site,json=referring-site,proto3" json:"referring_site,omitempty"`
+	ReferringSite string `protobuf:"bytes,21,opt,name=referring_site,json=referring-site,proto3" json:"referring_site,omitempty"`
 	// True when the candidate was referred by an existing user.
-	Referred bool `protobuf:"varint,19,opt,name=referred,proto3" json:"referred,omitempty"`
+	Referred bool `protobuf:"varint,22,opt,name=referred,proto3" json:"referred,omitempty"`
 	// True when the candidate is connected (has subscribed to updates).
-	Connected bool `protobuf:"varint,20,opt,name=connected,proto3" json:"connected,omitempty"`
+	Connected bool `protobuf:"varint,23,opt,name=connected,proto3" json:"connected,omitempty"`
 	// True when the candidate has unsubscribed from communications.
-	Unsubscribed  bool `protobuf:"varint,21,opt,name=unsubscribed,proto3" json:"unsubscribed,omitempty"`
+	Unsubscribed  bool `protobuf:"varint,24,opt,name=unsubscribed,proto3" json:"unsubscribed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -252,6 +259,20 @@ func (x *CandidateAttributes) GetLinkedinUrl() string {
 	return ""
 }
 
+func (x *CandidateAttributes) GetLinkedinUid() string {
+	if x != nil {
+		return x.LinkedinUid
+	}
+	return ""
+}
+
+func (x *CandidateAttributes) GetLinkedinProfile() string {
+	if x != nil {
+		return x.LinkedinProfile
+	}
+	return ""
+}
+
 func (x *CandidateAttributes) GetFacebookId() string {
 	if x != nil {
 		return x.FacebookId
@@ -259,9 +280,9 @@ func (x *CandidateAttributes) GetFacebookId() string {
 	return ""
 }
 
-func (x *CandidateAttributes) GetTwitterName() string {
+func (x *CandidateAttributes) GetFacebookProfile() string {
 	if x != nil {
-		return x.TwitterName
+		return x.FacebookProfile
 	}
 	return ""
 }
@@ -276,6 +297,13 @@ func (x *CandidateAttributes) GetResume() string {
 func (x *CandidateAttributes) GetOriginalResume() string {
 	if x != nil {
 		return x.OriginalResume
+	}
+	return ""
+}
+
+func (x *CandidateAttributes) GetResumeSummary() string {
+	if x != nil {
+		return x.ResumeSummary
 	}
 	return ""
 }
@@ -349,20 +377,31 @@ type CandidateRelationships struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The department associated with this candidate.
 	Department *ToOneRelationship `protobuf:"bytes,1,opt,name=department,proto3" json:"department,omitempty"`
+	// The division the candidate is associated with.
+	Division *ToOneRelationship `protobuf:"bytes,2,opt,name=division,proto3" json:"division,omitempty"`
 	// The role/job-title associated with this candidate.
-	Role *ToOneRelationship `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
+	Role *ToOneRelationship `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
 	// Regions the candidate is associated with.
-	Regions *ToManyRelationship `protobuf:"bytes,3,opt,name=regions,proto3" json:"regions,omitempty"`
+	Regions *ToManyRelationship `protobuf:"bytes,4,opt,name=regions,proto3" json:"regions,omitempty"`
 	// Locations the candidate is associated with.
-	Locations *ToManyRelationship `protobuf:"bytes,4,opt,name=locations,proto3" json:"locations,omitempty"`
+	Locations *ToManyRelationship `protobuf:"bytes,5,opt,name=locations,proto3" json:"locations,omitempty"`
 	// Custom field values attached to this candidate.
-	CustomFieldValues *ToManyRelationship `protobuf:"bytes,5,opt,name=custom_field_values,json=custom-field-values,proto3" json:"custom_field_values,omitempty"`
-	// Job applications this candidate has submitted.
-	JobApplications *ToManyRelationship `protobuf:"bytes,6,opt,name=job_applications,json=job-applications,proto3" json:"job_applications,omitempty"`
+	CustomFieldValues *ToManyRelationship `protobuf:"bytes,6,opt,name=custom_field_values,json=custom-field-values,proto3" json:"custom_field_values,omitempty"`
+	// Job applications this candidate has submitted — each carries the candidate's
+	// status (current stage, rejected-at, etc.) for one job.
+	JobApplications *ToManyRelationship `protobuf:"bytes,7,opt,name=job_applications,json=job-applications,proto3" json:"job_applications,omitempty"`
 	// Activities (events, notes, etc.) on this candidate.
-	Activities    *ToManyRelationship `protobuf:"bytes,7,opt,name=activities,proto3" json:"activities,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Activities *ToManyRelationship `protobuf:"bytes,8,opt,name=activities,proto3" json:"activities,omitempty"`
+	// Job-application questions this candidate answered.
+	Questions *ToManyRelationship `protobuf:"bytes,9,opt,name=questions,proto3" json:"questions,omitempty"`
+	// The candidate's answers to those questions.
+	Answers *ToManyRelationship `protobuf:"bytes,10,opt,name=answers,proto3" json:"answers,omitempty"`
+	// Uploaded files attached to this candidate (resumes, attachments).
+	Uploads *ToManyRelationship `protobuf:"bytes,11,opt,name=uploads,proto3" json:"uploads,omitempty"`
+	// Results from integrated partner / assessment providers.
+	PartnerResults *ToManyRelationship `protobuf:"bytes,12,opt,name=partner_results,json=partner-results,proto3" json:"partner_results,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CandidateRelationships) Reset() {
@@ -398,6 +437,13 @@ func (*CandidateRelationships) Descriptor() ([]byte, []int) {
 func (x *CandidateRelationships) GetDepartment() *ToOneRelationship {
 	if x != nil {
 		return x.Department
+	}
+	return nil
+}
+
+func (x *CandidateRelationships) GetDivision() *ToOneRelationship {
+	if x != nil {
+		return x.Division
 	}
 	return nil
 }
@@ -444,6 +490,34 @@ func (x *CandidateRelationships) GetActivities() *ToManyRelationship {
 	return nil
 }
 
+func (x *CandidateRelationships) GetQuestions() *ToManyRelationship {
+	if x != nil {
+		return x.Questions
+	}
+	return nil
+}
+
+func (x *CandidateRelationships) GetAnswers() *ToManyRelationship {
+	if x != nil {
+		return x.Answers
+	}
+	return nil
+}
+
+func (x *CandidateRelationships) GetUploads() *ToManyRelationship {
+	if x != nil {
+		return x.Uploads
+	}
+	return nil
+}
+
+func (x *CandidateRelationships) GetPartnerResults() *ToManyRelationship {
+	if x != nil {
+		return x.PartnerResults
+	}
+	return nil
+}
+
 var File_teamtailor_v1_candidate_proto protoreflect.FileDescriptor
 
 const file_teamtailor_v1_candidate_proto_rawDesc = "" +
@@ -459,7 +533,7 @@ const file_teamtailor_v1_candidate_proto_rawDesc = "" +
 	"attributes\x18\x03 \x01(\v2\".teamtailor.v1.CandidateAttributesR\n" +
 	"attributes\x12K\n" +
 	"\rrelationships\x18\x04 \x01(\v2%.teamtailor.v1.CandidateRelationshipsR\rrelationships\x12*\n" +
-	"\x05links\x18\x05 \x01(\v2\x14.teamtailor.v1.LinksR\x05links\"\xf7\x05\n" +
+	"\x05links\x18\x05 \x01(\v2\x14.teamtailor.v1.LinksR\x05links\"\xf7\x06\n" +
 	"\x13CandidateAttributes\x12*\n" +
 	"\n" +
 	"first_name\x18\x01 \x01(\tB\n" +
@@ -475,38 +549,47 @@ const file_teamtailor_v1_candidate_proto_rawDesc = "" +
 	"\x05pitch\x18\x05 \x01(\tR\x05pitch\x12\x18\n" +
 	"\asourced\x18\x06 \x01(\bR\asourced\x12\x12\n" +
 	"\x04tags\x18\a \x03(\tR\x04tags\x12\"\n" +
-	"\flinkedin_url\x18\b \x01(\tR\flinkedin-url\x12 \n" +
-	"\vfacebook_id\x18\t \x01(\tR\vfacebook-id\x12\"\n" +
-	"\ftwitter_name\x18\n" +
-	" \x01(\tR\ftwitter-name\x12\x16\n" +
-	"\x06resume\x18\v \x01(\tR\x06resume\x12(\n" +
-	"\x0foriginal_resume\x18\f \x01(\tR\x0foriginal-resume\x12\x18\n" +
-	"\apicture\x18\r \x01(\tR\apicture\x12:\n" +
+	"\flinkedin_url\x18\b \x01(\tR\flinkedin-url\x12\"\n" +
+	"\flinkedin_uid\x18\t \x01(\tR\flinkedin-uid\x12*\n" +
+	"\x10linkedin_profile\x18\n" +
+	" \x01(\tR\x10linkedin-profile\x12 \n" +
+	"\vfacebook_id\x18\v \x01(\tR\vfacebook-id\x12*\n" +
+	"\x10facebook_profile\x18\f \x01(\tR\x10facebook-profile\x12\x16\n" +
+	"\x06resume\x18\r \x01(\tR\x06resume\x12(\n" +
+	"\x0foriginal_resume\x18\x0e \x01(\tR\x0foriginal-resume\x12&\n" +
+	"\x0eresume_summary\x18\x0f \x01(\tR\x0eresume_summary\x12\x18\n" +
+	"\apicture\x18\x10 \x01(\tR\apicture\x12:\n" +
 	"\n" +
-	"created_at\x18\x0e \x01(\tB\x1a\xba\xb5\x18\x16\n" +
+	"created_at\x18\x11 \x01(\tB\x1a\xba\xb5\x18\x16\n" +
 	"\x142024-01-15T10:30:00ZR\n" +
 	"created-at\x12\x1e\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\tR\n" +
+	"updated_at\x18\x12 \x01(\tR\n" +
 	"updated-at\x12\x1a\n" +
-	"\binternal\x18\x10 \x01(\bR\binternal\x12$\n" +
-	"\rreferring_url\x18\x11 \x01(\tR\rreferring-url\x12&\n" +
-	"\x0ereferring_site\x18\x12 \x01(\tR\x0ereferring-site\x12\x1a\n" +
-	"\breferred\x18\x13 \x01(\bR\breferred\x12\x1c\n" +
-	"\tconnected\x18\x14 \x01(\bR\tconnected\x12\"\n" +
-	"\funsubscribed\x18\x15 \x01(\bR\funsubscribed\"\xf5\x03\n" +
+	"\binternal\x18\x13 \x01(\bR\binternal\x12$\n" +
+	"\rreferring_url\x18\x14 \x01(\tR\rreferring-url\x12&\n" +
+	"\x0ereferring_site\x18\x15 \x01(\tR\x0ereferring-site\x12\x1a\n" +
+	"\breferred\x18\x16 \x01(\bR\breferred\x12\x1c\n" +
+	"\tconnected\x18\x17 \x01(\bR\tconnected\x12\"\n" +
+	"\funsubscribed\x18\x18 \x01(\bR\funsubscribed\"\xbb\x06\n" +
 	"\x16CandidateRelationships\x12@\n" +
 	"\n" +
 	"department\x18\x01 \x01(\v2 .teamtailor.v1.ToOneRelationshipR\n" +
-	"department\x124\n" +
-	"\x04role\x18\x02 \x01(\v2 .teamtailor.v1.ToOneRelationshipR\x04role\x12;\n" +
-	"\aregions\x18\x03 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\aregions\x12?\n" +
-	"\tlocations\x18\x04 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\tlocations\x12S\n" +
-	"\x13custom_field_values\x18\x05 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\x13custom-field-values\x12M\n" +
-	"\x10job_applications\x18\x06 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\x10job-applications\x12A\n" +
+	"department\x12<\n" +
+	"\bdivision\x18\x02 \x01(\v2 .teamtailor.v1.ToOneRelationshipR\bdivision\x124\n" +
+	"\x04role\x18\x03 \x01(\v2 .teamtailor.v1.ToOneRelationshipR\x04role\x12;\n" +
+	"\aregions\x18\x04 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\aregions\x12?\n" +
+	"\tlocations\x18\x05 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\tlocations\x12S\n" +
+	"\x13custom_field_values\x18\x06 \x01(\v2!.teamtailor.v1.ToManyRelationshipR\x13custom-field-values\x12M\n" +
+	"\x10job_applications\x18\a \x01(\v2!.teamtailor.v1.ToManyRelationshipR\x10job-applications\x12A\n" +
 	"\n" +
-	"activities\x18\a \x01(\v2!.teamtailor.v1.ToManyRelationshipR\n" +
-	"activitiesB\xd1\x01\n" +
+	"activities\x18\b \x01(\v2!.teamtailor.v1.ToManyRelationshipR\n" +
+	"activities\x12?\n" +
+	"\tquestions\x18\t \x01(\v2!.teamtailor.v1.ToManyRelationshipR\tquestions\x12;\n" +
+	"\aanswers\x18\n" +
+	" \x01(\v2!.teamtailor.v1.ToManyRelationshipR\aanswers\x12;\n" +
+	"\auploads\x18\v \x01(\v2!.teamtailor.v1.ToManyRelationshipR\auploads\x12K\n" +
+	"\x0fpartner_results\x18\f \x01(\v2!.teamtailor.v1.ToManyRelationshipR\x0fpartner-resultsB\xd1\x01\n" +
 	"\x11com.teamtailor.v1B\x0eCandidateProtoP\x01ZWgithub.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen/teamtailor/v1;teamtailorv1\xa2\x02\x03TXX\xaa\x02\rTeamtailor.V1\xca\x02\rTeamtailor\\V1\xe2\x02\x19Teamtailor\\V1\\GPBMetadata\xea\x02\x0eTeamtailor::V1b\x06proto3"
 
 var (
@@ -535,17 +618,22 @@ var file_teamtailor_v1_candidate_proto_depIdxs = []int32{
 	2,  // 1: teamtailor.v1.Candidate.relationships:type_name -> teamtailor.v1.CandidateRelationships
 	3,  // 2: teamtailor.v1.Candidate.links:type_name -> teamtailor.v1.Links
 	4,  // 3: teamtailor.v1.CandidateRelationships.department:type_name -> teamtailor.v1.ToOneRelationship
-	4,  // 4: teamtailor.v1.CandidateRelationships.role:type_name -> teamtailor.v1.ToOneRelationship
-	5,  // 5: teamtailor.v1.CandidateRelationships.regions:type_name -> teamtailor.v1.ToManyRelationship
-	5,  // 6: teamtailor.v1.CandidateRelationships.locations:type_name -> teamtailor.v1.ToManyRelationship
-	5,  // 7: teamtailor.v1.CandidateRelationships.custom_field_values:type_name -> teamtailor.v1.ToManyRelationship
-	5,  // 8: teamtailor.v1.CandidateRelationships.job_applications:type_name -> teamtailor.v1.ToManyRelationship
-	5,  // 9: teamtailor.v1.CandidateRelationships.activities:type_name -> teamtailor.v1.ToManyRelationship
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	4,  // 4: teamtailor.v1.CandidateRelationships.division:type_name -> teamtailor.v1.ToOneRelationship
+	4,  // 5: teamtailor.v1.CandidateRelationships.role:type_name -> teamtailor.v1.ToOneRelationship
+	5,  // 6: teamtailor.v1.CandidateRelationships.regions:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 7: teamtailor.v1.CandidateRelationships.locations:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 8: teamtailor.v1.CandidateRelationships.custom_field_values:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 9: teamtailor.v1.CandidateRelationships.job_applications:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 10: teamtailor.v1.CandidateRelationships.activities:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 11: teamtailor.v1.CandidateRelationships.questions:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 12: teamtailor.v1.CandidateRelationships.answers:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 13: teamtailor.v1.CandidateRelationships.uploads:type_name -> teamtailor.v1.ToManyRelationship
+	5,  // 14: teamtailor.v1.CandidateRelationships.partner_results:type_name -> teamtailor.v1.ToManyRelationship
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_teamtailor_v1_candidate_proto_init() }

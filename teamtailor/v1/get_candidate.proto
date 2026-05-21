@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+import "buf/validate/validate.proto";
+
+import "teamtailor/v1/candidate.proto";
+
+// GetCandidateRequest is the request shape for GET /v1/candidates/{id}.
+message GetCandidateRequest {
+  // The candidate's id (path parameter).
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (sebuf.http.field_examples) = { values: ["12345"] }
+  ];
+
+  // Comma-separated relationships to sideload — useful for pulling status
+  // and resume context in one round-trip, e.g.
+  // `job-applications,job-applications.stage,uploads`.
+  string include = 2 [
+    (sebuf.http.query) = { name: "include" },
+    (sebuf.http.field_examples) = { values: ["job-applications,job-applications.stage"] }
+  ];
+
+  // Sparse fieldset: comma-separated attribute names to return on candidates.
+  string fields_candidates = 3 [
+    (sebuf.http.query) = { name: "fields[candidates]" }
+  ];
+}
+
+// GetCandidateResponse is the JSON:API document returned by GET /v1/candidates/{id}.
+message GetCandidateResponse {
+  // The candidate resource.
+  Candidate data = 1;
+}

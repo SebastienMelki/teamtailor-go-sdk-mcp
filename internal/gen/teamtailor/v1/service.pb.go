@@ -26,10 +26,21 @@ var File_teamtailor_v1_service_proto protoreflect.FileDescriptor
 
 const file_teamtailor_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bteamtailor/v1/service.proto\x12\rteamtailor.v1\x1a\x1csebuf/http/annotations.proto\x1a\x18sebuf/http/headers.proto\x1a#teamtailor/v1/list_candidates.proto2\xf2\x03\n" +
+	"\x1bteamtailor/v1/service.proto\x12\rteamtailor.v1\x1a\x1csebuf/http/annotations.proto\x1a\x18sebuf/http/headers.proto\x1a!teamtailor/v1/get_candidate.proto\x1a'teamtailor/v1/get_job_application.proto\x1a\x1dteamtailor/v1/get_stage.proto\x1a#teamtailor/v1/list_candidates.proto\x1a)teamtailor/v1/list_job_applications.proto\x1a\x1fteamtailor/v1/list_stages.proto2\xbf\b\n" +
 	"\x11TeamtailorService\x12r\n" +
 	"\x0eListCandidates\x12$.teamtailor.v1.ListCandidatesRequest\x1a%.teamtailor.v1.ListCandidatesResponse\"\x13\x9a\xb5\x18\x0f\n" +
-	"\v/candidates\x10\x01\x1a\xe8\x02\xa2\xb5\x18\x05\n" +
+	"\v/candidates\x10\x01\x12q\n" +
+	"\fGetCandidate\x12\".teamtailor.v1.GetCandidateRequest\x1a#.teamtailor.v1.GetCandidateResponse\"\x18\x9a\xb5\x18\x14\n" +
+	"\x10/candidates/{id}\x10\x01\x12\x87\x01\n" +
+	"\x13ListJobApplications\x12).teamtailor.v1.ListJobApplicationsRequest\x1a*.teamtailor.v1.ListJobApplicationsResponse\"\x19\x9a\xb5\x18\x15\n" +
+	"\x11/job-applications\x10\x01\x12\x86\x01\n" +
+	"\x11GetJobApplication\x12'.teamtailor.v1.GetJobApplicationRequest\x1a(.teamtailor.v1.GetJobApplicationResponse\"\x1e\x9a\xb5\x18\x1a\n" +
+	"\x16/job-applications/{id}\x10\x01\x12b\n" +
+	"\n" +
+	"ListStages\x12 .teamtailor.v1.ListStagesRequest\x1a!.teamtailor.v1.ListStagesResponse\"\x0f\x9a\xb5\x18\v\n" +
+	"\a/stages\x10\x01\x12a\n" +
+	"\bGetStage\x12\x1e.teamtailor.v1.GetStageRequest\x1a\x1f.teamtailor.v1.GetStageResponse\"\x14\x9a\xb5\x18\x10\n" +
+	"\f/stages/{id}\x10\x01\x1a\xe8\x02\xa2\xb5\x18\x05\n" +
 	"\x03/v1\xaa\xb5\x18\xda\x02\n" +
 	"s\n" +
 	"\rAuthorization\x12DToken token=<API_KEY> — Teamtailor API key, set by the Go wrapper.\x1a\x06string \x012\x12Token token=ABC123\n" +
@@ -40,17 +51,37 @@ const file_teamtailor_v1_service_proto_rawDesc = "" +
 	"\x11com.teamtailor.v1B\fServiceProtoP\x01ZWgithub.com/sebastienmelki/teamtailor-go-sdk-mcp/internal/gen/teamtailor/v1;teamtailorv1\xa2\x02\x03TXX\xaa\x02\rTeamtailor.V1\xca\x02\rTeamtailor\\V1\xe2\x02\x19Teamtailor\\V1\\GPBMetadata\xea\x02\x0eTeamtailor::V1b\x06proto3"
 
 var file_teamtailor_v1_service_proto_goTypes = []any{
-	(*ListCandidatesRequest)(nil),  // 0: teamtailor.v1.ListCandidatesRequest
-	(*ListCandidatesResponse)(nil), // 1: teamtailor.v1.ListCandidatesResponse
+	(*ListCandidatesRequest)(nil),       // 0: teamtailor.v1.ListCandidatesRequest
+	(*GetCandidateRequest)(nil),         // 1: teamtailor.v1.GetCandidateRequest
+	(*ListJobApplicationsRequest)(nil),  // 2: teamtailor.v1.ListJobApplicationsRequest
+	(*GetJobApplicationRequest)(nil),    // 3: teamtailor.v1.GetJobApplicationRequest
+	(*ListStagesRequest)(nil),           // 4: teamtailor.v1.ListStagesRequest
+	(*GetStageRequest)(nil),             // 5: teamtailor.v1.GetStageRequest
+	(*ListCandidatesResponse)(nil),      // 6: teamtailor.v1.ListCandidatesResponse
+	(*GetCandidateResponse)(nil),        // 7: teamtailor.v1.GetCandidateResponse
+	(*ListJobApplicationsResponse)(nil), // 8: teamtailor.v1.ListJobApplicationsResponse
+	(*GetJobApplicationResponse)(nil),   // 9: teamtailor.v1.GetJobApplicationResponse
+	(*ListStagesResponse)(nil),          // 10: teamtailor.v1.ListStagesResponse
+	(*GetStageResponse)(nil),            // 11: teamtailor.v1.GetStageResponse
 }
 var file_teamtailor_v1_service_proto_depIdxs = []int32{
-	0, // 0: teamtailor.v1.TeamtailorService.ListCandidates:input_type -> teamtailor.v1.ListCandidatesRequest
-	1, // 1: teamtailor.v1.TeamtailorService.ListCandidates:output_type -> teamtailor.v1.ListCandidatesResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: teamtailor.v1.TeamtailorService.ListCandidates:input_type -> teamtailor.v1.ListCandidatesRequest
+	1,  // 1: teamtailor.v1.TeamtailorService.GetCandidate:input_type -> teamtailor.v1.GetCandidateRequest
+	2,  // 2: teamtailor.v1.TeamtailorService.ListJobApplications:input_type -> teamtailor.v1.ListJobApplicationsRequest
+	3,  // 3: teamtailor.v1.TeamtailorService.GetJobApplication:input_type -> teamtailor.v1.GetJobApplicationRequest
+	4,  // 4: teamtailor.v1.TeamtailorService.ListStages:input_type -> teamtailor.v1.ListStagesRequest
+	5,  // 5: teamtailor.v1.TeamtailorService.GetStage:input_type -> teamtailor.v1.GetStageRequest
+	6,  // 6: teamtailor.v1.TeamtailorService.ListCandidates:output_type -> teamtailor.v1.ListCandidatesResponse
+	7,  // 7: teamtailor.v1.TeamtailorService.GetCandidate:output_type -> teamtailor.v1.GetCandidateResponse
+	8,  // 8: teamtailor.v1.TeamtailorService.ListJobApplications:output_type -> teamtailor.v1.ListJobApplicationsResponse
+	9,  // 9: teamtailor.v1.TeamtailorService.GetJobApplication:output_type -> teamtailor.v1.GetJobApplicationResponse
+	10, // 10: teamtailor.v1.TeamtailorService.ListStages:output_type -> teamtailor.v1.ListStagesResponse
+	11, // 11: teamtailor.v1.TeamtailorService.GetStage:output_type -> teamtailor.v1.GetStageResponse
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_teamtailor_v1_service_proto_init() }
@@ -58,7 +89,12 @@ func file_teamtailor_v1_service_proto_init() {
 	if File_teamtailor_v1_service_proto != nil {
 		return
 	}
+	file_teamtailor_v1_get_candidate_proto_init()
+	file_teamtailor_v1_get_job_application_proto_init()
+	file_teamtailor_v1_get_stage_proto_init()
 	file_teamtailor_v1_list_candidates_proto_init()
+	file_teamtailor_v1_list_job_applications_proto_init()
+	file_teamtailor_v1_list_stages_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

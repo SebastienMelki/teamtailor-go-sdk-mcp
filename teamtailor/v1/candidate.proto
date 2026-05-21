@@ -67,47 +67,57 @@ message CandidateAttributes {
   // LinkedIn profile URL.
   string linkedin_url = 8 [json_name = "linkedin-url"];
 
-  // Facebook profile ID.
-  string facebook_id = 9 [json_name = "facebook-id"];
+  // LinkedIn user ID extracted from `linkedin_url` (set when Teamtailor can resolve it).
+  string linkedin_uid = 9 [json_name = "linkedin-uid"];
 
-  // Twitter handle (without leading @).
-  string twitter_name = 10 [json_name = "twitter-name"];
+  // LinkedIn public profile snapshot (object), present when Teamtailor has imported it.
+  string linkedin_profile = 10 [json_name = "linkedin-profile"];
+
+  // Facebook user ID extracted from the candidate's Facebook profile.
+  string facebook_id = 11 [json_name = "facebook-id"];
+
+  // Facebook public profile snapshot, present when Teamtailor has imported it.
+  string facebook_profile = 12 [json_name = "facebook-profile"];
 
   // URL of the most recently uploaded resume (transformed by Teamtailor).
-  string resume = 11;
+  string resume = 13;
 
   // URL of the original uploaded resume file.
-  string original_resume = 12 [json_name = "original-resume"];
+  string original_resume = 14 [json_name = "original-resume"];
+
+  // Teamtailor-generated text summary of the resume (snake_case on the wire,
+  // unlike other candidate attributes).
+  string resume_summary = 15 [json_name = "resume_summary"];
 
   // URL of the candidate's profile picture.
-  string picture = 13;
+  string picture = 16;
 
   // RFC 3339 creation timestamp.
-  string created_at = 14 [
+  string created_at = 17 [
     json_name = "created-at",
     (sebuf.http.field_examples) = { values: ["2024-01-15T10:30:00Z"] }
   ];
 
   // RFC 3339 last-update timestamp.
-  string updated_at = 15 [json_name = "updated-at"];
+  string updated_at = 18 [json_name = "updated-at"];
 
   // True when the candidate was added internally rather than via a public form.
-  bool internal = 16;
+  bool internal = 19;
 
   // Referrer page URL.
-  string referring_url = 17 [json_name = "referring-url"];
+  string referring_url = 20 [json_name = "referring-url"];
 
   // Referrer site name.
-  string referring_site = 18 [json_name = "referring-site"];
+  string referring_site = 21 [json_name = "referring-site"];
 
   // True when the candidate was referred by an existing user.
-  bool referred = 19;
+  bool referred = 22;
 
   // True when the candidate is connected (has subscribed to updates).
-  bool connected = 20;
+  bool connected = 23;
 
   // True when the candidate has unsubscribed from communications.
-  bool unsubscribed = 21;
+  bool unsubscribed = 24;
 }
 
 // CandidateRelationships captures the JSON:API `relationships` block for a candidate.
@@ -116,21 +126,37 @@ message CandidateRelationships {
   // The department associated with this candidate.
   ToOneRelationship department = 1;
 
+  // The division the candidate is associated with.
+  ToOneRelationship division = 2;
+
   // The role/job-title associated with this candidate.
-  ToOneRelationship role = 2;
+  ToOneRelationship role = 3;
 
   // Regions the candidate is associated with.
-  ToManyRelationship regions = 3;
+  ToManyRelationship regions = 4;
 
   // Locations the candidate is associated with.
-  ToManyRelationship locations = 4;
+  ToManyRelationship locations = 5;
 
   // Custom field values attached to this candidate.
-  ToManyRelationship custom_field_values = 5 [json_name = "custom-field-values"];
+  ToManyRelationship custom_field_values = 6 [json_name = "custom-field-values"];
 
-  // Job applications this candidate has submitted.
-  ToManyRelationship job_applications = 6 [json_name = "job-applications"];
+  // Job applications this candidate has submitted — each carries the candidate's
+  // status (current stage, rejected-at, etc.) for one job.
+  ToManyRelationship job_applications = 7 [json_name = "job-applications"];
 
   // Activities (events, notes, etc.) on this candidate.
-  ToManyRelationship activities = 7;
+  ToManyRelationship activities = 8;
+
+  // Job-application questions this candidate answered.
+  ToManyRelationship questions = 9;
+
+  // The candidate's answers to those questions.
+  ToManyRelationship answers = 10;
+
+  // Uploaded files attached to this candidate (resumes, attachments).
+  ToManyRelationship uploads = 11;
+
+  // Results from integrated partner / assessment providers.
+  ToManyRelationship partner_results = 12 [json_name = "partner-results"];
 }

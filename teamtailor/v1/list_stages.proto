@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/common.proto";
+import "teamtailor/v1/stage.proto";
+
+// ListStagesRequest is the request shape for GET /v1/stages.
+//
+// Use this to enumerate the pipeline stages available — each job has its own
+// pipeline, so usually pair with `filter[job]` to get just that job's stages.
+message ListStagesRequest {
+  // Number of records per page (Teamtailor caps at 30).
+  int32 page_size = 1 [
+    (sebuf.http.query) = { name: "page[size]" },
+    (sebuf.http.field_examples) = { values: ["10"] }
+  ];
+
+  // 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+  int32 page_number = 2 [(sebuf.http.query) = { name: "page[number]" }];
+
+  // Filter stages to those belonging to a specific job.
+  string filter_job = 3 [
+    (sebuf.http.query) = { name: "filter[job]" },
+    (sebuf.http.field_examples) = { values: ["123"] }
+  ];
+
+  // Filter stages by stage-type id.
+  string filter_stage_type = 4 [
+    (sebuf.http.query) = { name: "filter[stage-type]" }
+  ];
+
+  // Comma-separated relationships to sideload, e.g. "job-applications,stage-type".
+  string include = 5 [
+    (sebuf.http.query) = { name: "include" },
+    (sebuf.http.field_examples) = { values: ["stage-type"] }
+  ];
+
+  // Sort order. Use `row-order` when scoped to a single job to match the
+  // Teamtailor pipeline ordering.
+  string sort = 6 [
+    (sebuf.http.query) = { name: "sort" },
+    (sebuf.http.field_examples) = { values: ["row-order"] }
+  ];
+
+  // Sparse fieldset: comma-separated attribute names to return on stages.
+  string fields_stages = 7 [
+    (sebuf.http.query) = { name: "fields[stages]" }
+  ];
+}
+
+// ListStagesResponse is the JSON:API document returned by GET /v1/stages.
+message ListStagesResponse {
+  // List of stage resources.
+  repeated Stage data = 1;
+
+  // Pagination links.
+  Links links = 2;
+
+  // Pagination metadata.
+  Meta meta = 3;
+}

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+import "buf/validate/validate.proto";
+
+import "teamtailor/v1/job_application.proto";
+
+// GetJobApplicationRequest is the request shape for GET /v1/job-applications/{id}.
+message GetJobApplicationRequest {
+  // The job application's id (path parameter).
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (sebuf.http.field_examples) = { values: ["1"] }
+  ];
+
+  // Comma-separated relationships to sideload, e.g. "stage,candidate,job".
+  string include = 2 [
+    (sebuf.http.query) = { name: "include" },
+    (sebuf.http.field_examples) = { values: ["stage,candidate,job"] }
+  ];
+
+  // Sparse fieldset for the primary resource.
+  string fields_job_applications = 3 [
+    (sebuf.http.query) = { name: "fields[job-applications]" }
+  ];
+}
+
+// GetJobApplicationResponse is the JSON:API document returned by GET /v1/job-applications/{id}.
+message GetJobApplicationResponse {
+  // The job application resource.
+  JobApplication data = 1;
+}

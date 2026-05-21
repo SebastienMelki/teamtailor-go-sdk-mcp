@@ -59,6 +59,48 @@ paths:
                   required: false
                   schema:
                     type: string
+                - name: filter[division]
+                  in: query
+                  description: Filter candidates by division id.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[department]
+                  in: query
+                  description: Filter candidates by department id.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[role]
+                  in: query
+                  description: Filter candidates by role id.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[locations]
+                  in: query
+                  description: Filter candidates by location id (comma-separated for multiple).
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[regions]
+                  in: query
+                  description: Filter candidates by region id (comma-separated for multiple).
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[created-at][from]
+                  in: query
+                  description: Filter candidates created after this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[created-at][to]
+                  in: query
+                  description: Filter candidates created before this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
                 - name: filter[updated-at][from]
                   in: query
                   description: Filter candidates updated after this RFC 3339 timestamp.
@@ -71,15 +113,27 @@ paths:
                   required: false
                   schema:
                     type: string
+                - name: filter[connected]
+                  in: query
+                  description: Filter by connected status ("true" or "false").
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[phone]
+                  in: query
+                  description: Filter by phone number (6-14 chars, may include `+`).
+                  required: false
+                  schema:
+                    type: string
                 - name: include
                   in: query
-                  description: Comma-separated relationships to sideload, e.g. "department,locations".
+                  description: Comma-separated relationships to sideload, e.g. "department,locations,job-applications,job-applications.stage".
                   required: false
                   schema:
                     type: string
                 - name: sort
                   in: query
-                  description: Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
+                  description: Sort order, e.g. "id" (default ascending) or "-id" (descending). Accepts any candidate attribute.
                   required: false
                   schema:
                     type: string
@@ -96,6 +150,453 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListCandidatesResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /v1/candidates/{id}:
+        get:
+            tags:
+                - TeamtailorService
+            summary: GetCandidate
+            description: |-
+                GetCandidate returns a single candidate (with attributes such as
+                 `resume`, `original-resume`, and `resume_summary`) and lets callers
+                 sideload status via `include=job-applications,job-applications.stage`.
+                 GET /v1/candidates/{id}
+            operationId: GetCandidate
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: id
+                  in: path
+                  description: The candidate's id (path parameter).
+                  required: true
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: |-
+                    Comma-separated relationships to sideload — useful for pulling status
+                     and resume context in one round-trip, e.g.
+                     `job-applications,job-applications.stage,uploads`.
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[candidates]
+                  in: query
+                  description: 'Sparse fieldset: comma-separated attribute names to return on candidates.'
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetCandidateResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /v1/job-applications:
+        get:
+            tags:
+                - TeamtailorService
+            summary: ListJobApplications
+            description: |-
+                ListJobApplications returns a paginated list of job applications, each
+                 carrying a candidate's status on one job (current stage, rejected-at).
+                 GET /v1/job-applications
+            operationId: ListJobApplications
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: page[size]
+                  in: query
+                  description: Number of records per page (Teamtailor caps at 30).
+                  required: false
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page[number]
+                  in: query
+                  description: 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+                  required: false
+                  schema:
+                    type: integer
+                    format: int32
+                - name: filter[stage-type]
+                  in: query
+                  description: 'Filter by current stage type: "Inbox", "In process", or "Hired".'
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[job]
+                  in: query
+                  description: |-
+                    Filter applications to a single job (position) id. Not in the Postman
+                     table but follows the JSON:API convention used by `filter[job]` on
+                     /v1/stages and /v1/uploads.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[candidate]
+                  in: query
+                  description: Filter applications by candidate id.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[created-at][from]
+                  in: query
+                  description: Filter applications created after this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[created-at][to]
+                  in: query
+                  description: Filter applications created before this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[updated-at][from]
+                  in: query
+                  description: Filter applications updated after this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[updated-at][to]
+                  in: query
+                  description: Filter applications updated before this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[changed-stage-at][from]
+                  in: query
+                  description: Filter applications whose `changed-stage-at` is newer than this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[changed-stage-at][to]
+                  in: query
+                  description: Filter applications whose `changed-stage-at` is older than this RFC 3339 timestamp.
+                  required: false
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: Comma-separated relationships to sideload, e.g. "stage,candidate,job,reject-reason".
+                  required: false
+                  schema:
+                    type: string
+                - name: sort
+                  in: query
+                  description: Sort order, e.g. "-changed-stage-at" for latest-moved first.
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[job-applications]
+                  in: query
+                  description: 'Sparse fieldset: comma-separated attribute names to return on job-applications.'
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListJobApplicationsResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /v1/job-applications/{id}:
+        get:
+            tags:
+                - TeamtailorService
+            summary: GetJobApplication
+            description: |-
+                GetJobApplication returns a single job application.
+                 GET /v1/job-applications/{id}
+            operationId: GetJobApplication
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: id
+                  in: path
+                  description: The job application's id (path parameter).
+                  required: true
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: Comma-separated relationships to sideload, e.g. "stage,candidate,job".
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[job-applications]
+                  in: query
+                  description: Sparse fieldset for the primary resource.
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetJobApplicationResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /v1/stages:
+        get:
+            tags:
+                - TeamtailorService
+            summary: ListStages
+            description: |-
+                ListStages returns the pipeline stages — pair with `filter[job]` to scope
+                 to a single job's pipeline. Resolves a job application's `stage`
+                 relationship to a human-readable status name.
+                 GET /v1/stages
+            operationId: ListStages
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: page[size]
+                  in: query
+                  description: Number of records per page (Teamtailor caps at 30).
+                  required: false
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page[number]
+                  in: query
+                  description: 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+                  required: false
+                  schema:
+                    type: integer
+                    format: int32
+                - name: filter[job]
+                  in: query
+                  description: Filter stages to those belonging to a specific job.
+                  required: false
+                  schema:
+                    type: string
+                - name: filter[stage-type]
+                  in: query
+                  description: Filter stages by stage-type id.
+                  required: false
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: Comma-separated relationships to sideload, e.g. "job-applications,stage-type".
+                  required: false
+                  schema:
+                    type: string
+                - name: sort
+                  in: query
+                  description: |-
+                    Sort order. Use `row-order` when scoped to a single job to match the
+                     Teamtailor pipeline ordering.
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[stages]
+                  in: query
+                  description: 'Sparse fieldset: comma-separated attribute names to return on stages.'
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStagesResponse'
+                "400":
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ValidationError'
+                default:
+                    description: Error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /v1/stages/{id}:
+        get:
+            tags:
+                - TeamtailorService
+            summary: GetStage
+            description: |-
+                GetStage returns a single stage.
+                 GET /v1/stages/{id}
+            operationId: GetStage
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: Token token=<API_KEY> — Teamtailor API key, set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: Token token=ABC123
+                - name: X-Api-Version
+                  in: header
+                  description: Dated API version (YYYYMMDD). Defaults to 20240904 in the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: 20240904
+                - name: Accept
+                  in: header
+                  description: application/vnd.api+json — JSON:API accept type. Set by the Go wrapper.
+                  required: true
+                  schema:
+                    type: string
+                    example: application/vnd.api+json
+                - name: id
+                  in: path
+                  description: The stage's id (path parameter).
+                  required: true
+                  schema:
+                    type: string
+                - name: include
+                  in: query
+                  description: Comma-separated relationships to sideload, e.g. "job-applications".
+                  required: false
+                  schema:
+                    type: string
+                - name: fields[stages]
+                  in: query
+                  description: Sparse fieldset for the stage resource.
+                  required: false
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetStageResponse'
                 "400":
                     description: Validation error
                     content:
@@ -163,24 +664,51 @@ components:
                         - jane.doe@example.com
                     description: Filter candidates by exact email match.
                     example: jane.doe@example.com
+                filterDivision:
+                    type: string
+                    description: Filter candidates by division id.
+                filterDepartment:
+                    type: string
+                    description: Filter candidates by department id.
+                filterRole:
+                    type: string
+                    description: Filter candidates by role id.
+                filterLocations:
+                    type: string
+                    description: Filter candidates by location id (comma-separated for multiple).
+                filterRegions:
+                    type: string
+                    description: Filter candidates by region id (comma-separated for multiple).
+                filterCreatedAtFrom:
+                    type: string
+                    description: Filter candidates created after this RFC 3339 timestamp.
+                filterCreatedAtTo:
+                    type: string
+                    description: Filter candidates created before this RFC 3339 timestamp.
                 filterUpdatedAtFrom:
                     type: string
                     description: Filter candidates updated after this RFC 3339 timestamp.
                 filterUpdatedAtTo:
                     type: string
                     description: Filter candidates updated before this RFC 3339 timestamp.
+                filterConnected:
+                    type: string
+                    description: Filter by connected status ("true" or "false").
+                filterPhone:
+                    type: string
+                    description: Filter by phone number (6-14 chars, may include `+`).
                 include:
                     type: string
                     examples:
-                        - department,locations
-                    description: Comma-separated relationships to sideload, e.g. "department,locations".
-                    example: department,locations
+                        - job-applications,job-applications.stage
+                    description: Comma-separated relationships to sideload, e.g. "department,locations,job-applications,job-applications.stage".
+                    example: job-applications,job-applications.stage
                 sort:
                     type: string
                     examples:
-                        - -created-at
-                    description: Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
-                    example: -created-at
+                        - -id
+                    description: Sort order, e.g. "id" (default ascending) or "-id" (descending). Accepts any candidate attribute.
+                    example: -id
                 fieldsCandidates:
                     type: string
                     description: 'Sparse fieldset: comma-separated attribute names to return on candidates.'
@@ -188,6 +716,9 @@ components:
                 ListCandidatesRequest is the request shape for GET /v1/candidates.
                  All fields map to JSON:API query parameters. Bracketed names like `page[size]`
                  and `filter[email]` are preserved verbatim via `sebuf.http.query.name`.
+
+                 Filters available per the Teamtailor docs: email, division, department, role,
+                 locations, regions, created-at[from|to], updated-at[from|to], connected, phone.
         ListCandidatesResponse:
             type: object
             properties:
@@ -273,18 +804,29 @@ components:
                 linkedin-url:
                     type: string
                     description: LinkedIn profile URL.
+                linkedin-uid:
+                    type: string
+                    description: LinkedIn user ID extracted from `linkedin_url` (set when Teamtailor can resolve it).
+                linkedin-profile:
+                    type: string
+                    description: LinkedIn public profile snapshot (object), present when Teamtailor has imported it.
                 facebook-id:
                     type: string
-                    description: Facebook profile ID.
-                twitter-name:
+                    description: Facebook user ID extracted from the candidate's Facebook profile.
+                facebook-profile:
                     type: string
-                    description: Twitter handle (without leading @).
+                    description: Facebook public profile snapshot, present when Teamtailor has imported it.
                 resume:
                     type: string
                     description: URL of the most recently uploaded resume (transformed by Teamtailor).
                 original-resume:
                     type: string
                     description: URL of the original uploaded resume file.
+                resume_summary:
+                    type: string
+                    description: |-
+                        Teamtailor-generated text summary of the resume (snake_case on the wire,
+                         unlike other candidate attributes).
                 picture:
                     type: string
                     description: URL of the candidate's profile picture.
@@ -324,6 +866,8 @@ components:
             properties:
                 department:
                     $ref: '#/components/schemas/ToOneRelationship'
+                division:
+                    $ref: '#/components/schemas/ToOneRelationship'
                 role:
                     $ref: '#/components/schemas/ToOneRelationship'
                 regions:
@@ -335,6 +879,14 @@ components:
                 job-applications:
                     $ref: '#/components/schemas/ToManyRelationship'
                 activities:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                questions:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                answers:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                uploads:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                partner-results:
                     $ref: '#/components/schemas/ToManyRelationship'
             description: |-
                 CandidateRelationships captures the JSON:API `relationships` block for a candidate.
@@ -409,3 +961,387 @@ components:
                     format: int32
                     description: Total number of pages.
             description: Meta is the JSON:API top-level `meta` object returned alongside list responses.
+        GetCandidateRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    examples:
+                        - 12345
+                    description: The candidate's id (path parameter).
+                    example: 12345
+                include:
+                    type: string
+                    examples:
+                        - job-applications,job-applications.stage
+                    description: |-
+                        Comma-separated relationships to sideload — useful for pulling status
+                         and resume context in one round-trip, e.g.
+                         `job-applications,job-applications.stage,uploads`.
+                    example: job-applications,job-applications.stage
+                fieldsCandidates:
+                    type: string
+                    description: 'Sparse fieldset: comma-separated attribute names to return on candidates.'
+            required:
+                - id
+            description: GetCandidateRequest is the request shape for GET /v1/candidates/{id}.
+        GetCandidateResponse:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/Candidate'
+            description: GetCandidateResponse is the JSON:API document returned by GET /v1/candidates/{id}.
+        ListJobApplicationsRequest:
+            type: object
+            properties:
+                pageSize:
+                    type: integer
+                    examples:
+                        - 10
+                    format: int32
+                    description: Number of records per page (Teamtailor caps at 30).
+                    example: 10
+                pageNumber:
+                    type: integer
+                    format: int32
+                    description: 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+                filterStageType:
+                    type: string
+                    examples:
+                        - In process
+                    description: 'Filter by current stage type: "Inbox", "In process", or "Hired".'
+                    example: In process
+                filterJob:
+                    type: string
+                    examples:
+                        - 123
+                    description: |-
+                        Filter applications to a single job (position) id. Not in the Postman
+                         table but follows the JSON:API convention used by `filter[job]` on
+                         /v1/stages and /v1/uploads.
+                    example: 123
+                filterCandidate:
+                    type: string
+                    description: Filter applications by candidate id.
+                filterCreatedAtFrom:
+                    type: string
+                    description: Filter applications created after this RFC 3339 timestamp.
+                filterCreatedAtTo:
+                    type: string
+                    description: Filter applications created before this RFC 3339 timestamp.
+                filterUpdatedAtFrom:
+                    type: string
+                    description: Filter applications updated after this RFC 3339 timestamp.
+                filterUpdatedAtTo:
+                    type: string
+                    description: Filter applications updated before this RFC 3339 timestamp.
+                filterChangedStageAtFrom:
+                    type: string
+                    description: Filter applications whose `changed-stage-at` is newer than this RFC 3339 timestamp.
+                filterChangedStageAtTo:
+                    type: string
+                    description: Filter applications whose `changed-stage-at` is older than this RFC 3339 timestamp.
+                include:
+                    type: string
+                    examples:
+                        - stage,candidate
+                    description: Comma-separated relationships to sideload, e.g. "stage,candidate,job,reject-reason".
+                    example: stage,candidate
+                sort:
+                    type: string
+                    examples:
+                        - -changed-stage-at
+                    description: Sort order, e.g. "-changed-stage-at" for latest-moved first.
+                    example: -changed-stage-at
+                fieldsJobApplications:
+                    type: string
+                    description: 'Sparse fieldset: comma-separated attribute names to return on job-applications.'
+            description: |-
+                ListJobApplicationsRequest is the request shape for GET /v1/job-applications.
+
+                 Use this to pull a candidate's pipeline status. Sideload `stage` to resolve
+                 the status to a human-readable stage name in one round-trip:
+
+                   GET /v1/job-applications?include=stage,candidate
+        ListJobApplicationsResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/JobApplication'
+                links:
+                    $ref: '#/components/schemas/Links'
+                meta:
+                    $ref: '#/components/schemas/Meta'
+            description: ListJobApplicationsResponse is the JSON:API document returned by GET /v1/job-applications.
+        JobApplication:
+            type: object
+            properties:
+                type:
+                    type: string
+                    examples:
+                        - job-applications
+                    description: JSON:API resource type, always "job-applications" for this message.
+                    example: job-applications
+                id:
+                    type: string
+                    examples:
+                        - 1
+                    description: Teamtailor job-application id.
+                    example: 1
+                attributes:
+                    $ref: '#/components/schemas/JobApplicationAttributes'
+                relationships:
+                    $ref: '#/components/schemas/JobApplicationRelationships'
+                links:
+                    $ref: '#/components/schemas/Links'
+            description: |-
+                JobApplication is a JSON:API resource of type `job-applications`.
+
+                 A job application links one candidate to one job, and carries that
+                 candidate's status in the hiring pipeline (current stage, rejected-at, etc.).
+
+                 Shape on the wire:
+                 {
+                   "type": "job-applications",
+                   "id": "1",
+                   "attributes": { "cover-letter": "...", "changed-stage-at": "...", ... },
+                   "relationships": { "candidate": ..., "job": ..., "stage": ..., "reject-reason": ... },
+                   "links": { "self": "..." }
+                 }
+        JobApplicationAttributes:
+            type: object
+            properties:
+                cover-letter:
+                    type: string
+                    description: The candidate-supplied cover letter (may be null).
+                created-at:
+                    type: string
+                    description: RFC 3339 creation timestamp.
+                referring-url:
+                    type: string
+                    description: Referrer page URL.
+                referring-site:
+                    type: string
+                    description: Referrer site name.
+                rejected-at:
+                    type: string
+                    description: |-
+                        RFC 3339 timestamp of when the application was rejected, or empty if not rejected.
+                         Pair with the `reject-reason` relationship for the cause.
+                sourced:
+                    type: boolean
+                    description: True when the application was sourced internally rather than submitted by the candidate.
+                updated-at:
+                    type: string
+                    description: RFC 3339 last-update timestamp.
+                row-order:
+                    type: integer
+                    format: int32
+                    description: Position of this application inside its current stage (sortable integer).
+                changed-stage-at:
+                    type: string
+                    description: |-
+                        RFC 3339 timestamp of when the application last moved between stages —
+                         i.e. when the candidate's status last changed.
+                send-user-notifications:
+                    type: boolean
+                    description: Whether to notify subscribed users when this application is created (write-only).
+            description: |-
+                JobApplicationAttributes mirrors the JSON:API `attributes` object on a
+                 job application.
+        JobApplicationRelationships:
+            type: object
+            properties:
+                candidate:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                job:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                stage:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                reject-reason:
+                    $ref: '#/components/schemas/ToOneRelationship'
+            description: JobApplicationRelationships captures the JSON:API `relationships` block.
+        GetJobApplicationRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    examples:
+                        - 1
+                    description: The job application's id (path parameter).
+                    example: 1
+                include:
+                    type: string
+                    examples:
+                        - stage,candidate,job
+                    description: Comma-separated relationships to sideload, e.g. "stage,candidate,job".
+                    example: stage,candidate,job
+                fieldsJobApplications:
+                    type: string
+                    description: Sparse fieldset for the primary resource.
+            required:
+                - id
+            description: GetJobApplicationRequest is the request shape for GET /v1/job-applications/{id}.
+        GetJobApplicationResponse:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/JobApplication'
+            description: GetJobApplicationResponse is the JSON:API document returned by GET /v1/job-applications/{id}.
+        ListStagesRequest:
+            type: object
+            properties:
+                pageSize:
+                    type: integer
+                    examples:
+                        - 10
+                    format: int32
+                    description: Number of records per page (Teamtailor caps at 30).
+                    example: 10
+                pageNumber:
+                    type: integer
+                    format: int32
+                    description: 1-based page number (Teamtailor uses page-number pagination on this endpoint).
+                filterJob:
+                    type: string
+                    examples:
+                        - 123
+                    description: Filter stages to those belonging to a specific job.
+                    example: 123
+                filterStageType:
+                    type: string
+                    description: Filter stages by stage-type id.
+                include:
+                    type: string
+                    examples:
+                        - stage-type
+                    description: Comma-separated relationships to sideload, e.g. "job-applications,stage-type".
+                    example: stage-type
+                sort:
+                    type: string
+                    examples:
+                        - row-order
+                    description: |-
+                        Sort order. Use `row-order` when scoped to a single job to match the
+                         Teamtailor pipeline ordering.
+                    example: row-order
+                fieldsStages:
+                    type: string
+                    description: 'Sparse fieldset: comma-separated attribute names to return on stages.'
+            description: |-
+                ListStagesRequest is the request shape for GET /v1/stages.
+
+                 Use this to enumerate the pipeline stages available — each job has its own
+                 pipeline, so usually pair with `filter[job]` to get just that job's stages.
+        ListStagesResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Stage'
+                links:
+                    $ref: '#/components/schemas/Links'
+                meta:
+                    $ref: '#/components/schemas/Meta'
+            description: ListStagesResponse is the JSON:API document returned by GET /v1/stages.
+        Stage:
+            type: object
+            properties:
+                type:
+                    type: string
+                    examples:
+                        - stages
+                    description: JSON:API resource type, always "stages" for this message.
+                    example: stages
+                id:
+                    type: string
+                    examples:
+                        - 1
+                    description: Teamtailor stage id.
+                    example: 1
+                attributes:
+                    $ref: '#/components/schemas/StageAttributes'
+                relationships:
+                    $ref: '#/components/schemas/StageRelationships'
+                links:
+                    $ref: '#/components/schemas/Links'
+            description: |-
+                Stage is a JSON:API resource of type `stages`.
+
+                 A stage represents one column in a job's hiring pipeline (Inbox, Reviewing,
+                 Interview, Offered, Hired, etc.). A candidate's "status" on a given job is
+                 the stage their JobApplication currently points to.
+        StageAttributes:
+            type: object
+            properties:
+                name:
+                    type: string
+                    examples:
+                        - Interview
+                    description: |-
+                        Human-readable stage name — e.g. "Inbox", "Interview", "Hired".
+                         This is the user-facing status label.
+                    example: Interview
+                legacy-stage-type-name:
+                    type: string
+                    description: |-
+                        Stage-type bucket from the legacy API: "Inbox", "In process", or "Hired".
+                         Useful for grouping custom stages by lifecycle phase.
+                row-order:
+                    type: integer
+                    format: int32
+                    description: Sortable position of this stage within its job's pipeline.
+                active-job-applications-count:
+                    type: integer
+                    format: int32
+                    description: Number of active (non-rejected) job-applications currently in this stage.
+                rejected-job-applications-count:
+                    type: integer
+                    format: int32
+                    description: Number of rejected job-applications currently in this stage.
+                created-at:
+                    type: string
+                    description: RFC 3339 creation timestamp.
+                updated-at:
+                    type: string
+                    description: RFC 3339 last-update timestamp.
+            description: StageAttributes mirrors the JSON:API `attributes` object on a stage.
+        StageRelationships:
+            type: object
+            properties:
+                job-applications:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                triggers:
+                    $ref: '#/components/schemas/ToManyRelationship'
+                job:
+                    $ref: '#/components/schemas/ToOneRelationship'
+                stage-type:
+                    $ref: '#/components/schemas/ToOneRelationship'
+            description: StageRelationships captures the JSON:API `relationships` block on a stage.
+        GetStageRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                    examples:
+                        - 1
+                    description: The stage's id (path parameter).
+                    example: 1
+                include:
+                    type: string
+                    description: Comma-separated relationships to sideload, e.g. "job-applications".
+                fieldsStages:
+                    type: string
+                    description: Sparse fieldset for the stage resource.
+            required:
+                - id
+            description: GetStageRequest is the request shape for GET /v1/stages/{id}.
+        GetStageResponse:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/Stage'
+            description: GetStageResponse is the JSON:API document returned by GET /v1/stages/{id}.

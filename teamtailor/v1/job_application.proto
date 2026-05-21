@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+
+import "teamtailor/v1/common.proto";
+
+// JobApplication is a JSON:API resource of type `job-applications`.
+//
+// A job application links one candidate to one job, and carries that
+// candidate's status in the hiring pipeline (current stage, rejected-at, etc.).
+//
+// Shape on the wire:
+// {
+//   "type": "job-applications",
+//   "id": "1",
+//   "attributes": { "cover-letter": "...", "changed-stage-at": "...", ... },
+//   "relationships": { "candidate": ..., "job": ..., "stage": ..., "reject-reason": ... },
+//   "links": { "self": "..." }
+// }
+message JobApplication {
+  // JSON:API resource type, always "job-applications" for this message.
+  string type = 1 [(sebuf.http.field_examples) = { values: ["job-applications"] }];
+
+  // Teamtailor job-application id.
+  string id = 2 [(sebuf.http.field_examples) = { values: ["1"] }];
+
+  // Attributes block.
+  JobApplicationAttributes attributes = 3;
+
+  // Relationships to candidate, job, stage, and reject-reason.
+  JobApplicationRelationships relationships = 4;
+
+  // Links to this resource.
+  Links links = 5;
+}
+
+// JobApplicationAttributes mirrors the JSON:API `attributes` object on a
+// job application.
+message JobApplicationAttributes {
+  // The candidate-supplied cover letter (may be null).
+  string cover_letter = 1 [json_name = "cover-letter"];
+
+  // RFC 3339 creation timestamp.
+  string created_at = 2 [json_name = "created-at"];
+
+  // Referrer page URL.
+  string referring_url = 3 [json_name = "referring-url"];
+
+  // Referrer site name.
+  string referring_site = 4 [json_name = "referring-site"];
+
+  // RFC 3339 timestamp of when the application was rejected, or empty if not rejected.
+  // Pair with the `reject-reason` relationship for the cause.
+  string rejected_at = 5 [json_name = "rejected-at"];
+
+  // True when the application was sourced internally rather than submitted by the candidate.
+  bool sourced = 6;
+
+  // RFC 3339 last-update timestamp.
+  string updated_at = 7 [json_name = "updated-at"];
+
+  // Position of this application inside its current stage (sortable integer).
+  int32 row_order = 8 [json_name = "row-order"];
+
+  // RFC 3339 timestamp of when the application last moved between stages —
+  // i.e. when the candidate's status last changed.
+  string changed_stage_at = 9 [json_name = "changed-stage-at"];
+
+  // Whether to notify subscribed users when this application is created (write-only).
+  bool send_user_notifications = 10 [json_name = "send-user-notifications"];
+}
+
+// JobApplicationRelationships captures the JSON:API `relationships` block.
+message JobApplicationRelationships {
+  // The candidate who applied.
+  ToOneRelationship candidate = 1;
+
+  // The job the candidate applied to.
+  ToOneRelationship job = 2;
+
+  // The current pipeline stage — sideload with `include=stage` to get the
+  // human-readable status name (e.g. "Inbox", "Interview", "Hired").
+  ToOneRelationship stage = 3;
+
+  // The reason the application was rejected, if any.
+  ToOneRelationship reject_reason = 4 [json_name = "reject-reason"];
+}

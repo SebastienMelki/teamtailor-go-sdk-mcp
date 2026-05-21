@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package teamtailor.v1;
+
+import "sebuf/http/annotations.proto";
+import "buf/validate/validate.proto";
+
+import "teamtailor/v1/stage.proto";
+
+// GetStageRequest is the request shape for GET /v1/stages/{id}.
+message GetStageRequest {
+  // The stage's id (path parameter).
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (sebuf.http.field_examples) = { values: ["1"] }
+  ];
+
+  // Comma-separated relationships to sideload, e.g. "job-applications".
+  string include = 2 [
+    (sebuf.http.query) = { name: "include" }
+  ];
+
+  // Sparse fieldset for the stage resource.
+  string fields_stages = 3 [
+    (sebuf.http.query) = { name: "fields[stages]" }
+  ];
+}
+
+// GetStageResponse is the JSON:API document returned by GET /v1/stages/{id}.
+message GetStageResponse {
+  // The stage resource.
+  Stage data = 1;
+}

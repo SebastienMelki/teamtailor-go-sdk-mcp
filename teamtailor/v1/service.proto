@@ -5,7 +5,12 @@ package teamtailor.v1;
 import "sebuf/http/annotations.proto";
 import "sebuf/http/headers.proto";
 
+import "teamtailor/v1/get_candidate.proto";
+import "teamtailor/v1/get_job_application.proto";
+import "teamtailor/v1/get_stage.proto";
 import "teamtailor/v1/list_candidates.proto";
+import "teamtailor/v1/list_job_applications.proto";
+import "teamtailor/v1/list_stages.proto";
 
 // TeamtailorService wraps the Teamtailor public API (https://docs.teamtailor.com/).
 //
@@ -55,6 +60,64 @@ service TeamtailorService {
   rpc ListCandidates(ListCandidatesRequest) returns (ListCandidatesResponse) {
     option (sebuf.http.config) = {
       path: "/candidates"
+      method: HTTP_METHOD_GET
+    };
+  }
+
+  // GetCandidate returns a single candidate (with attributes such as
+  // `resume`, `original-resume`, and `resume_summary`) and lets callers
+  // sideload status via `include=job-applications,job-applications.stage`.
+  // GET /v1/candidates/{id}
+  rpc GetCandidate(GetCandidateRequest) returns (GetCandidateResponse) {
+    option (sebuf.http.config) = {
+      path: "/candidates/{id}"
+      method: HTTP_METHOD_GET
+    };
+  }
+
+  // ============================================
+  // Job Application Operations
+  // ============================================
+
+  // ListJobApplications returns a paginated list of job applications, each
+  // carrying a candidate's status on one job (current stage, rejected-at).
+  // GET /v1/job-applications
+  rpc ListJobApplications(ListJobApplicationsRequest) returns (ListJobApplicationsResponse) {
+    option (sebuf.http.config) = {
+      path: "/job-applications"
+      method: HTTP_METHOD_GET
+    };
+  }
+
+  // GetJobApplication returns a single job application.
+  // GET /v1/job-applications/{id}
+  rpc GetJobApplication(GetJobApplicationRequest) returns (GetJobApplicationResponse) {
+    option (sebuf.http.config) = {
+      path: "/job-applications/{id}"
+      method: HTTP_METHOD_GET
+    };
+  }
+
+  // ============================================
+  // Stage Operations
+  // ============================================
+
+  // ListStages returns the pipeline stages — pair with `filter[job]` to scope
+  // to a single job's pipeline. Resolves a job application's `stage`
+  // relationship to a human-readable status name.
+  // GET /v1/stages
+  rpc ListStages(ListStagesRequest) returns (ListStagesResponse) {
+    option (sebuf.http.config) = {
+      path: "/stages"
+      method: HTTP_METHOD_GET
+    };
+  }
+
+  // GetStage returns a single stage.
+  // GET /v1/stages/{id}
+  rpc GetStage(GetStageRequest) returns (GetStageResponse) {
+    option (sebuf.http.config) = {
+      path: "/stages/{id}"
       method: HTTP_METHOD_GET
     };
   }

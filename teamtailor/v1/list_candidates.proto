@@ -10,6 +10,9 @@ import "teamtailor/v1/common.proto";
 // ListCandidatesRequest is the request shape for GET /v1/candidates.
 // All fields map to JSON:API query parameters. Bracketed names like `page[size]`
 // and `filter[email]` are preserved verbatim via `sebuf.http.query.name`.
+//
+// Filters available per the Teamtailor docs: email, division, department, role,
+// locations, regions, created-at[from|to], updated-at[from|to], connected, phone.
 message ListCandidatesRequest {
   // Number of records per page (Teamtailor caps at 30).
   int32 page_size = 1 [
@@ -29,30 +32,61 @@ message ListCandidatesRequest {
     (sebuf.http.field_examples) = { values: ["jane.doe@example.com"] }
   ];
 
+  // Filter candidates by division id.
+  string filter_division = 5 [(sebuf.http.query) = { name: "filter[division]" }];
+
+  // Filter candidates by department id.
+  string filter_department = 6 [(sebuf.http.query) = { name: "filter[department]" }];
+
+  // Filter candidates by role id.
+  string filter_role = 7 [(sebuf.http.query) = { name: "filter[role]" }];
+
+  // Filter candidates by location id (comma-separated for multiple).
+  string filter_locations = 8 [(sebuf.http.query) = { name: "filter[locations]" }];
+
+  // Filter candidates by region id (comma-separated for multiple).
+  string filter_regions = 9 [(sebuf.http.query) = { name: "filter[regions]" }];
+
+  // Filter candidates created after this RFC 3339 timestamp.
+  string filter_created_at_from = 10 [
+    (sebuf.http.query) = { name: "filter[created-at][from]" }
+  ];
+
+  // Filter candidates created before this RFC 3339 timestamp.
+  string filter_created_at_to = 11 [
+    (sebuf.http.query) = { name: "filter[created-at][to]" }
+  ];
+
   // Filter candidates updated after this RFC 3339 timestamp.
-  string filter_updated_at_from = 5 [
+  string filter_updated_at_from = 12 [
     (sebuf.http.query) = { name: "filter[updated-at][from]" }
   ];
 
   // Filter candidates updated before this RFC 3339 timestamp.
-  string filter_updated_at_to = 6 [
+  string filter_updated_at_to = 13 [
     (sebuf.http.query) = { name: "filter[updated-at][to]" }
   ];
 
-  // Comma-separated relationships to sideload, e.g. "department,locations".
-  string include = 7 [
+  // Filter by connected status ("true" or "false").
+  string filter_connected = 14 [(sebuf.http.query) = { name: "filter[connected]" }];
+
+  // Filter by phone number (6-14 chars, may include `+`).
+  string filter_phone = 15 [(sebuf.http.query) = { name: "filter[phone]" }];
+
+  // Comma-separated relationships to sideload, e.g. "department,locations,job-applications,job-applications.stage".
+  string include = 16 [
     (sebuf.http.query) = { name: "include" },
-    (sebuf.http.field_examples) = { values: ["department,locations"] }
+    (sebuf.http.field_examples) = { values: ["job-applications,job-applications.stage"] }
   ];
 
-  // Sort order, e.g. "created-at" (ascending) or "-created-at" (descending).
-  string sort = 8 [
+  // Sort order, e.g. "id" (default ascending) or "-id" (descending). Accepts any candidate attribute.
+  string sort = 17 [
     (sebuf.http.query) = { name: "sort" },
-    (sebuf.http.field_examples) = { values: ["-created-at"] }
+    (sebuf.http.field_examples) = { values: ["-id"] }
   ];
 
   // Sparse fieldset: comma-separated attribute names to return on candidates.
-  string fields_candidates = 9 [
+  string fields_candidates = 18 [
     (sebuf.http.query) = { name: "fields[candidates]" }
   ];
 }

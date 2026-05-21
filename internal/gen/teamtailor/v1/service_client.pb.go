@@ -34,6 +34,11 @@ type sebufUnmarshaler interface {
 // TeamtailorServiceClient is the client API for TeamtailorService service.
 type TeamtailorServiceClient interface {
 	ListCandidates(ctx context.Context, req *ListCandidatesRequest, opts ...TeamtailorServiceCallOption) (*ListCandidatesResponse, error)
+	GetCandidate(ctx context.Context, req *GetCandidateRequest, opts ...TeamtailorServiceCallOption) (*GetCandidateResponse, error)
+	ListJobApplications(ctx context.Context, req *ListJobApplicationsRequest, opts ...TeamtailorServiceCallOption) (*ListJobApplicationsResponse, error)
+	GetJobApplication(ctx context.Context, req *GetJobApplicationRequest, opts ...TeamtailorServiceCallOption) (*GetJobApplicationResponse, error)
+	ListStages(ctx context.Context, req *ListStagesRequest, opts ...TeamtailorServiceCallOption) (*ListStagesResponse, error)
+	GetStage(ctx context.Context, req *GetStageRequest, opts ...TeamtailorServiceCallOption) (*GetStageResponse, error)
 }
 
 // teamtailorServiceClient is the implementation of TeamtailorServiceClient.
@@ -189,11 +194,38 @@ func (c *teamtailorServiceClient) ListCandidates(ctx context.Context, req *ListC
 	if req.FilterEmail != "" {
 		queryParams.Set("filter[email]", fmt.Sprint(req.FilterEmail))
 	}
+	if req.FilterDivision != "" {
+		queryParams.Set("filter[division]", fmt.Sprint(req.FilterDivision))
+	}
+	if req.FilterDepartment != "" {
+		queryParams.Set("filter[department]", fmt.Sprint(req.FilterDepartment))
+	}
+	if req.FilterRole != "" {
+		queryParams.Set("filter[role]", fmt.Sprint(req.FilterRole))
+	}
+	if req.FilterLocations != "" {
+		queryParams.Set("filter[locations]", fmt.Sprint(req.FilterLocations))
+	}
+	if req.FilterRegions != "" {
+		queryParams.Set("filter[regions]", fmt.Sprint(req.FilterRegions))
+	}
+	if req.FilterCreatedAtFrom != "" {
+		queryParams.Set("filter[created-at][from]", fmt.Sprint(req.FilterCreatedAtFrom))
+	}
+	if req.FilterCreatedAtTo != "" {
+		queryParams.Set("filter[created-at][to]", fmt.Sprint(req.FilterCreatedAtTo))
+	}
 	if req.FilterUpdatedAtFrom != "" {
 		queryParams.Set("filter[updated-at][from]", fmt.Sprint(req.FilterUpdatedAtFrom))
 	}
 	if req.FilterUpdatedAtTo != "" {
 		queryParams.Set("filter[updated-at][to]", fmt.Sprint(req.FilterUpdatedAtTo))
+	}
+	if req.FilterConnected != "" {
+		queryParams.Set("filter[connected]", fmt.Sprint(req.FilterConnected))
+	}
+	if req.FilterPhone != "" {
+		queryParams.Set("filter[phone]", fmt.Sprint(req.FilterPhone))
 	}
 	if req.Include != "" {
 		queryParams.Set("include", fmt.Sprint(req.Include))
@@ -254,6 +286,440 @@ func (c *teamtailorServiceClient) ListCandidates(ctx context.Context, req *ListC
 
 	// Unmarshal response
 	result := &ListCandidatesResponse{}
+	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return result, nil
+}
+
+// GetCandidate calls the GetCandidate RPC.
+func (c *teamtailorServiceClient) GetCandidate(ctx context.Context, req *GetCandidateRequest, opts ...TeamtailorServiceCallOption) (*GetCandidateResponse, error) {
+	callOpts := &teamtailorServiceCallOptions{}
+	for _, opt := range opts {
+		opt(callOpts)
+	}
+
+	// Build URL
+	path := "/v1/candidates/{id}"
+	path = strings.Replace(path, "{id}", url.PathEscape(fmt.Sprint(req.Id)), 1)
+	reqURL := c.baseURL + path
+
+	// Add query parameters
+	queryParams := url.Values{}
+	if req.Include != "" {
+		queryParams.Set("include", fmt.Sprint(req.Include))
+	}
+	if req.FieldsCandidates != "" {
+		queryParams.Set("fields[candidates]", fmt.Sprint(req.FieldsCandidates))
+	}
+	if len(queryParams) > 0 {
+		reqURL += "?" + queryParams.Encode()
+	}
+
+	contentType := c.contentType
+	if callOpts.contentType != "" {
+		contentType = callOpts.contentType
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", contentType)
+	for k, v := range c.defaultHeaders {
+		httpReq.Header.Set(k, v)
+	}
+	for k, v := range callOpts.headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Execute request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check for error status codes
+	if resp.StatusCode >= 400 {
+		return nil, c.handleErrorResponse(resp.StatusCode, respBody, contentType)
+	}
+
+	// Resolve discardUnknownFields: per-call option overrides client default
+	discardUnknown := c.discardUnknownFields
+	if callOpts.discardUnknownFields != nil {
+		discardUnknown = *callOpts.discardUnknownFields
+	}
+
+	// Unmarshal response
+	result := &GetCandidateResponse{}
+	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return result, nil
+}
+
+// ListJobApplications calls the ListJobApplications RPC.
+func (c *teamtailorServiceClient) ListJobApplications(ctx context.Context, req *ListJobApplicationsRequest, opts ...TeamtailorServiceCallOption) (*ListJobApplicationsResponse, error) {
+	callOpts := &teamtailorServiceCallOptions{}
+	for _, opt := range opts {
+		opt(callOpts)
+	}
+
+	// Build URL
+	path := "/v1/job-applications"
+	reqURL := c.baseURL + path
+
+	// Add query parameters
+	queryParams := url.Values{}
+	if req.PageSize != 0 {
+		queryParams.Set("page[size]", fmt.Sprint(req.PageSize))
+	}
+	if req.PageNumber != 0 {
+		queryParams.Set("page[number]", fmt.Sprint(req.PageNumber))
+	}
+	if req.FilterStageType != "" {
+		queryParams.Set("filter[stage-type]", fmt.Sprint(req.FilterStageType))
+	}
+	if req.FilterJob != "" {
+		queryParams.Set("filter[job]", fmt.Sprint(req.FilterJob))
+	}
+	if req.FilterCandidate != "" {
+		queryParams.Set("filter[candidate]", fmt.Sprint(req.FilterCandidate))
+	}
+	if req.FilterCreatedAtFrom != "" {
+		queryParams.Set("filter[created-at][from]", fmt.Sprint(req.FilterCreatedAtFrom))
+	}
+	if req.FilterCreatedAtTo != "" {
+		queryParams.Set("filter[created-at][to]", fmt.Sprint(req.FilterCreatedAtTo))
+	}
+	if req.FilterUpdatedAtFrom != "" {
+		queryParams.Set("filter[updated-at][from]", fmt.Sprint(req.FilterUpdatedAtFrom))
+	}
+	if req.FilterUpdatedAtTo != "" {
+		queryParams.Set("filter[updated-at][to]", fmt.Sprint(req.FilterUpdatedAtTo))
+	}
+	if req.FilterChangedStageAtFrom != "" {
+		queryParams.Set("filter[changed-stage-at][from]", fmt.Sprint(req.FilterChangedStageAtFrom))
+	}
+	if req.FilterChangedStageAtTo != "" {
+		queryParams.Set("filter[changed-stage-at][to]", fmt.Sprint(req.FilterChangedStageAtTo))
+	}
+	if req.Include != "" {
+		queryParams.Set("include", fmt.Sprint(req.Include))
+	}
+	if req.Sort != "" {
+		queryParams.Set("sort", fmt.Sprint(req.Sort))
+	}
+	if req.FieldsJobApplications != "" {
+		queryParams.Set("fields[job-applications]", fmt.Sprint(req.FieldsJobApplications))
+	}
+	if len(queryParams) > 0 {
+		reqURL += "?" + queryParams.Encode()
+	}
+
+	contentType := c.contentType
+	if callOpts.contentType != "" {
+		contentType = callOpts.contentType
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", contentType)
+	for k, v := range c.defaultHeaders {
+		httpReq.Header.Set(k, v)
+	}
+	for k, v := range callOpts.headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Execute request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check for error status codes
+	if resp.StatusCode >= 400 {
+		return nil, c.handleErrorResponse(resp.StatusCode, respBody, contentType)
+	}
+
+	// Resolve discardUnknownFields: per-call option overrides client default
+	discardUnknown := c.discardUnknownFields
+	if callOpts.discardUnknownFields != nil {
+		discardUnknown = *callOpts.discardUnknownFields
+	}
+
+	// Unmarshal response
+	result := &ListJobApplicationsResponse{}
+	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return result, nil
+}
+
+// GetJobApplication calls the GetJobApplication RPC.
+func (c *teamtailorServiceClient) GetJobApplication(ctx context.Context, req *GetJobApplicationRequest, opts ...TeamtailorServiceCallOption) (*GetJobApplicationResponse, error) {
+	callOpts := &teamtailorServiceCallOptions{}
+	for _, opt := range opts {
+		opt(callOpts)
+	}
+
+	// Build URL
+	path := "/v1/job-applications/{id}"
+	path = strings.Replace(path, "{id}", url.PathEscape(fmt.Sprint(req.Id)), 1)
+	reqURL := c.baseURL + path
+
+	// Add query parameters
+	queryParams := url.Values{}
+	if req.Include != "" {
+		queryParams.Set("include", fmt.Sprint(req.Include))
+	}
+	if req.FieldsJobApplications != "" {
+		queryParams.Set("fields[job-applications]", fmt.Sprint(req.FieldsJobApplications))
+	}
+	if len(queryParams) > 0 {
+		reqURL += "?" + queryParams.Encode()
+	}
+
+	contentType := c.contentType
+	if callOpts.contentType != "" {
+		contentType = callOpts.contentType
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", contentType)
+	for k, v := range c.defaultHeaders {
+		httpReq.Header.Set(k, v)
+	}
+	for k, v := range callOpts.headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Execute request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check for error status codes
+	if resp.StatusCode >= 400 {
+		return nil, c.handleErrorResponse(resp.StatusCode, respBody, contentType)
+	}
+
+	// Resolve discardUnknownFields: per-call option overrides client default
+	discardUnknown := c.discardUnknownFields
+	if callOpts.discardUnknownFields != nil {
+		discardUnknown = *callOpts.discardUnknownFields
+	}
+
+	// Unmarshal response
+	result := &GetJobApplicationResponse{}
+	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return result, nil
+}
+
+// ListStages calls the ListStages RPC.
+func (c *teamtailorServiceClient) ListStages(ctx context.Context, req *ListStagesRequest, opts ...TeamtailorServiceCallOption) (*ListStagesResponse, error) {
+	callOpts := &teamtailorServiceCallOptions{}
+	for _, opt := range opts {
+		opt(callOpts)
+	}
+
+	// Build URL
+	path := "/v1/stages"
+	reqURL := c.baseURL + path
+
+	// Add query parameters
+	queryParams := url.Values{}
+	if req.PageSize != 0 {
+		queryParams.Set("page[size]", fmt.Sprint(req.PageSize))
+	}
+	if req.PageNumber != 0 {
+		queryParams.Set("page[number]", fmt.Sprint(req.PageNumber))
+	}
+	if req.FilterJob != "" {
+		queryParams.Set("filter[job]", fmt.Sprint(req.FilterJob))
+	}
+	if req.FilterStageType != "" {
+		queryParams.Set("filter[stage-type]", fmt.Sprint(req.FilterStageType))
+	}
+	if req.Include != "" {
+		queryParams.Set("include", fmt.Sprint(req.Include))
+	}
+	if req.Sort != "" {
+		queryParams.Set("sort", fmt.Sprint(req.Sort))
+	}
+	if req.FieldsStages != "" {
+		queryParams.Set("fields[stages]", fmt.Sprint(req.FieldsStages))
+	}
+	if len(queryParams) > 0 {
+		reqURL += "?" + queryParams.Encode()
+	}
+
+	contentType := c.contentType
+	if callOpts.contentType != "" {
+		contentType = callOpts.contentType
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", contentType)
+	for k, v := range c.defaultHeaders {
+		httpReq.Header.Set(k, v)
+	}
+	for k, v := range callOpts.headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Execute request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check for error status codes
+	if resp.StatusCode >= 400 {
+		return nil, c.handleErrorResponse(resp.StatusCode, respBody, contentType)
+	}
+
+	// Resolve discardUnknownFields: per-call option overrides client default
+	discardUnknown := c.discardUnknownFields
+	if callOpts.discardUnknownFields != nil {
+		discardUnknown = *callOpts.discardUnknownFields
+	}
+
+	// Unmarshal response
+	result := &ListStagesResponse{}
+	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return result, nil
+}
+
+// GetStage calls the GetStage RPC.
+func (c *teamtailorServiceClient) GetStage(ctx context.Context, req *GetStageRequest, opts ...TeamtailorServiceCallOption) (*GetStageResponse, error) {
+	callOpts := &teamtailorServiceCallOptions{}
+	for _, opt := range opts {
+		opt(callOpts)
+	}
+
+	// Build URL
+	path := "/v1/stages/{id}"
+	path = strings.Replace(path, "{id}", url.PathEscape(fmt.Sprint(req.Id)), 1)
+	reqURL := c.baseURL + path
+
+	// Add query parameters
+	queryParams := url.Values{}
+	if req.Include != "" {
+		queryParams.Set("include", fmt.Sprint(req.Include))
+	}
+	if req.FieldsStages != "" {
+		queryParams.Set("fields[stages]", fmt.Sprint(req.FieldsStages))
+	}
+	if len(queryParams) > 0 {
+		reqURL += "?" + queryParams.Encode()
+	}
+
+	contentType := c.contentType
+	if callOpts.contentType != "" {
+		contentType = callOpts.contentType
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", contentType)
+	for k, v := range c.defaultHeaders {
+		httpReq.Header.Set(k, v)
+	}
+	for k, v := range callOpts.headers {
+		httpReq.Header.Set(k, v)
+	}
+
+	// Execute request
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check for error status codes
+	if resp.StatusCode >= 400 {
+		return nil, c.handleErrorResponse(resp.StatusCode, respBody, contentType)
+	}
+
+	// Resolve discardUnknownFields: per-call option overrides client default
+	discardUnknown := c.discardUnknownFields
+	if callOpts.discardUnknownFields != nil {
+		discardUnknown = *callOpts.discardUnknownFields
+	}
+
+	// Unmarshal response
+	result := &GetStageResponse{}
 	if err := c.unmarshalResponse(respBody, result, contentType, discardUnknown); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
